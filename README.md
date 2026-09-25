@@ -7,6 +7,16 @@
 - `index.html`：網站本體
 - `setup.sql`：Supabase 初始設定（只需要執行一次）
 
+## 我的連線資訊
+
+第一次在新電腦或新瀏覽器打開網站時，貼上這兩個值：
+
+- **Project URL**：`https://irspvzxkxxlnibmtmpox.supabase.co`
+- **Publishable key**：`sb_publishable_3bk70caairZWzia_AcdlZg_kQP4e0K9`
+
+> Publishable key 本來就是設計給網頁公開使用的，放在這裡沒關係。資料靠「必須登入」和「關閉公開註冊」保護。
+> ⚠️ 絕對不要把 **secret key** 或 **service_role key** 放進這個 repo。
+
 ## 第一次設定
 
 ### A. Supabase
