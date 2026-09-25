@@ -123,7 +123,6 @@ for each row execute function public.touch_updated_at();
 insert into public.software_categories (key, label, parent_key, is_active, sort_order)
 values
   ('hm', 'HyperMesh', null, true, 0),
-  ('hypermesh', 'Meshing', 'hm', true, 10),
   ('optistruct', 'OptiStruct', 'hm', true, 20),
   ('lsdyna', 'LS-DYNA', null, true, 30)
 on conflict (key) do nothing;
