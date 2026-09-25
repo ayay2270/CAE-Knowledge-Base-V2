@@ -165,7 +165,9 @@ h1.d-title{font-size:26px;font-weight:600;margin:12px 0 10px;line-height:1.35;le
 button.tag:hover{background:rgba(37,99,235,.2)}
 .gallery-main{width:100%;border-radius:14px;background:var(--ink);overflow:hidden;cursor:zoom-in;display:block;aspect-ratio:16/9;max-height:440px}
 .gallery-main img{width:100%;height:100%;object-fit:contain;display:block}
-.gallery-row{display:flex;gap:8px;margin:8px 0 28px;flex-wrap:wrap}
+.gallery-row{display:flex;gap:8px;margin:8px 0 0;flex-wrap:wrap}
+.detail-figs{margin-top:8px}
+.detail-figs h3{font-size:13px;font-weight:600;color:var(--text2);margin:18px 0 10px}
 .gallery-row button{width:80px;height:54px;border-radius:8px;overflow:hidden;background:var(--ink);border:2px solid transparent}
 .gallery-row button.on{border-color:var(--yellow)}
 .gallery-row img{width:100%;height:100%;object-fit:cover;display:block}
@@ -894,6 +896,7 @@ function md(src) {
   flushP(); flushL();
   return out;
 }
+const KB_LABELS = { symptom: '問題現象', root_cause: '原因分析', solution: '解決方法' };
 function renderDetail(resetScroll) {
   const el = $('#detail');
   const e = S.entries.find(x => x.id === S.sel);
@@ -902,8 +905,9 @@ function renderDetail(resetScroll) {
   const imgs = e.images || [];
   const gi = Math.min(S.gi, Math.max(imgs.length - 1, 0));
   const gallery = imgs.length
-    ? `<button class="gallery-main" data-act="zoom" aria-label="放大圖片"><img data-path="${esc(imgs[gi].path)}" alt=""></button>` +
-      (imgs.length > 1 ? `<div class="gallery-row">${imgs.map((im, i) => `<button class="${i === gi ? 'on' : ''}" data-act="gi" data-i="${i}" aria-label="第 ${i + 1} 張"><img data-path="${esc(im.path)}" alt=""></button>`).join('')}</div>` : '<div class="gap"></div>')
+    ? `<section class="detail-figs"><h3>圖片</h3><button class="gallery-main" data-act="zoom" aria-label="放大圖片"><img data-path="${esc(imgs[gi].path)}" alt=""></button>` +
+      (imgs.length > 1 ? `<div class="gallery-row">${imgs.map((im, i) => `<button class="${i === gi ? 'on' : ''}" data-act="gi" data-i="${i}" aria-label="第 ${i + 1} 張"><img data-path="${esc(im.path)}" alt=""></button>`).join('')}</div>` : '') +
+      `</section>`
     : '';
   const pending = '<span class="pending">尚未填寫</span>';
   const step = (n, bg, ink, title, text) => `<div class="step"><div class="num" style="background:${bg}">${n}</div>
@@ -923,12 +927,11 @@ function renderDetail(resetScroll) {
       ${user ? `<button class="btn primary" data-act="edit"><i class="ti ti-edit"></i>編輯</button>` : ''}</div></div>
     <h1 class="d-title">${esc(e.title)}</h1>
     ${(e.tags || []).length ? `<div class="tags">${e.tags.map(t => `<button class="tag" data-act="dtag" data-t="${esc(t)}">#${esc(t)}</button>`).join('')}</div>` : '<div class="gap" style="height:12px"></div>'}
-    ${gallery}
-    ${step('1', 'var(--orange)', '#EA580C', '症狀', e.symptom)}
-    ${step('2', 'var(--blue)', 'var(--blue)', '根本原因', e.root_cause)}
-    <div class="step"><div class="num" style="background:var(--green)"><i class="ti ti-check"></i></div>
-      <div class="solution"><h3>解法</h3><div class="prose">${md(e.solution) || pending}</div></div></div>
+    ${step('1', 'var(--orange)', '#EA580C', KB_LABELS.symptom, e.symptom)}
+    ${step('2', 'var(--blue)', 'var(--blue)', KB_LABELS.root_cause, e.root_cause)}
+    ${step('3', 'var(--green)', '#059669', KB_LABELS.solution, e.solution)}
     ${extras}
+    ${gallery}
   </div>`;
   hydrate(el);
   if (resetScroll) el.scrollTop = 0;
@@ -1093,9 +1096,9 @@ function renderEditor(restored) {
       <div class="field"><label class="lab" for="tagIn">標籤</label>
         <div class="tagbox" id="tagbox"><input id="tagIn" placeholder="輸入後按 Enter"></div>
         <div class="sugg" id="sugg"></div></div>
-      ${textBox('symptom', '1', 'var(--orange)', '#EA580C', '問題現象', '看到什麼現象？錯誤訊息可以直接貼上')}
-      ${textBox('root_cause', '2', 'var(--blue)', 'var(--blue)', '原因分析', '為什麼會發生？還不確定可以先空著')}
-      ${textBox('solution', '3', 'var(--green)', '#059669', '解決方法', '具體步驟、參數設定')}
+      ${textBox('symptom', '1', 'var(--orange)', '#EA580C', KB_LABELS.symptom, '看到什麼現象？錯誤訊息可以直接貼上')}
+      ${textBox('root_cause', '2', 'var(--blue)', 'var(--blue)', KB_LABELS.root_cause, '為什麼會發生？還不確定可以先空著')}
+      ${textBox('solution', '3', 'var(--green)', '#059669', KB_LABELS.solution, '具體步驟、參數設定')}
       <div class="ed-extras">
         <div class="xbox" style="border-color:#FECACA;background:#FFF7F7"><h4 style="color:#DC2626">試過但無效</h4>
           <div id="fails"></div>
