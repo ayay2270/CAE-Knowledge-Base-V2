@@ -179,7 +179,7 @@ button.tag:hover{background:rgba(37,99,235,.2)}
 .step h3{font-size:13px;font-weight:600;margin:4px 0 4px}
 .prose{font-size:15px;line-height:1.75;word-wrap:break-word}
 .prose p{margin:0 0 8px} .prose p:last-child,.prose ul:last-child{margin-bottom:0}
-.prose ul{margin:0 0 8px;padding-left:20px}
+.prose ul,.prose ol{margin:0 0 8px;padding-left:22px}
 .prose code{font-family:var(--mono);font-size:.87em;background:rgba(15,23,42,.07);padding:1px 5px;border-radius:4px}
 .solution{flex:1;min-width:0;background:var(--green);color:#fff;border-radius:12px;padding:12px 16px}
 .solution h3{color:#fff;margin-top:0}
@@ -242,7 +242,14 @@ section.editor{background:var(--bg);flex:1;min-height:0;overflow:auto}
 .tb{margin-left:auto;display:flex;gap:2px}
 .tb button{width:28px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2)}
 .tb button:hover{background:rgba(15,23,42,.08)}
-.box textarea{width:100%;border:none;outline:none;resize:vertical;padding:10px 12px;font-size:14px;line-height:1.65;min-height:76px;display:block;background:#fff}
+.tb button.on{background:rgba(15,23,42,.12);color:var(--text)}
+.box textarea,.rte{width:100%;border:none;outline:none;padding:10px 12px;font-size:14px;line-height:1.65;min-height:76px;display:block;background:#fff}
+.box textarea{resize:vertical}
+.rte{white-space:pre-wrap;word-wrap:break-word}
+.rte[data-empty="1"]:before{content:attr(data-placeholder);color:var(--text3);pointer-events:none}
+.rte p,.rte div{margin:0}
+.rte ul,.rte ol{margin:4px 0;padding-left:1.4em}
+.rte code{font-family:var(--mono);font-size:.87em;background:rgba(15,23,42,.07);padding:1px 5px;border-radius:4px}
 .ed-extras{margin-left:40px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .xbox{border:1.5px solid;border-radius:12px;padding:12px 14px;background:#fff}
 .xbox h4{font-size:13px;font-weight:600;margin:0 0 8px;display:flex;align-items:center;gap:5px}
@@ -884,13 +891,19 @@ function inline(s) {
 }
 function md(src) {
   if (!src || !src.trim()) return '';
-  let out = '', list = null, para = [];
+  let out = '', list = null, listTag = 'ul', para = [];
   const flushP = () => { if (para.length) { out += '<p>' + para.map(inline).join('<br>') + '</p>'; para = []; } };
-  const flushL = () => { if (list) { out += '<ul>' + list.map(x => '<li>' + inline(x) + '</li>').join('') + '</ul>'; list = null; } };
+  const flushL = () => { if (list) { out += `<${listTag}>` + list.map(x => '<li>' + inline(x) + '</li>').join('') + `</${listTag}>`; list = null; } };
   for (const ln of esc(src).split('\n')) {
-    const m = ln.match(/^\s*[-*•]\s+(.*)$/);
-    if (m) { flushP(); (list = list || []).push(m[1]); }
-    else if (!ln.trim()) { flushP(); flushL(); }
+    const bullet = ln.match(/^\s*[-*•]\s+(.*)$/);
+    const num = ln.match(/^\s*\d+[.)]\s+(.*)$/);
+    if (bullet || num) {
+      const tag = bullet ? 'ul' : 'ol';
+      if (list && listTag !== tag) flushL();
+      flushP();
+      listTag = tag;
+      (list = list || []).push((bullet || num)[1]);
+    } else if (!ln.trim()) { flushP(); flushL(); }
     else { flushL(); para.push(ln); }
   }
   flushP(); flushL();
@@ -1060,8 +1073,9 @@ function textBox(field, n, color, ink, title, placeholder) {
       <div class="box-h" style="background:color-mix(in srgb, ${color} 10%, #fff);color:${ink}">${title}
         <span class="tb"><button type="button" data-act="md" data-k="bold" data-f="${field}" title="粗體"><i class="ti ti-bold"></i></button>
         <button type="button" data-act="md" data-k="list" data-f="${field}" title="項目清單"><i class="ti ti-list"></i></button>
+        <button type="button" data-act="md" data-k="olist" data-f="${field}" title="編號清單"><i class="ti ti-list-numbers"></i></button>
         <button type="button" data-act="md" data-k="code" data-f="${field}" title="指令／參數"><i class="ti ti-code"></i></button></span></div>
-      <textarea data-f="${field}" placeholder="${placeholder}">${esc(ED[field])}</textarea>
+      <div class="rte" contenteditable="true" role="textbox" data-f="${field}" data-placeholder="${placeholder}" data-empty="${ED[field] && String(ED[field]).trim() ? '' : '1'}">${md(ED[field] || '')}</div>
     </div></div>`;
 }
 
@@ -1122,6 +1136,18 @@ function renderEditor(restored) {
   $('#edTitle').addEventListener('input', e => { ED.title = e.target.value; $('#edTitle').classList.remove('bad'); $('#titleErr').classList.add('hidden'); touch(); });
   $('#edCat')?.addEventListener('change', e => { ED.category = e.target.value; e.target.className = 'ed-badge ' + visualGroup(ED.category); touch(); });
   $$('#editor textarea[data-f]').forEach(ta => ta.addEventListener('input', () => { ED[ta.dataset.f] = ta.value; touch(); }));
+  $$('#editor .rte').forEach(el => {
+    el.addEventListener('input', () => syncRte(el));
+    el.addEventListener('keyup', () => markTb(el));
+    el.addEventListener('mouseup', () => markTb(el));
+    el.addEventListener('paste', e => {
+      if ([...(e.clipboardData?.files || [])].some(f => f.type.startsWith('image/'))) return;
+      e.preventDefault();
+      document.execCommand('insertText', false, e.clipboardData?.getData('text/plain') || '');
+      syncRte(el);
+    });
+  });
+  $$('#editor .tb button').forEach(b => b.addEventListener('mousedown', e => e.preventDefault()));
   const tagIn = $('#tagIn');
   tagIn.addEventListener('keydown', e => {
     if ((e.key === 'Enter' || e.key === ',' || e.key === '，') && !e.isComposing) { e.preventDefault(); addTag(tagIn.value); tagIn.value = ''; renderSugg(); }
@@ -1195,22 +1221,110 @@ function renderImgs() {
     <button type="button" data-act="rmimg" data-i="${i}" title="刪除" aria-label="刪除圖片"><i class="ti ti-trash"></i></button></div></div>`).join('');
   hydrate($('#imgs'));
 }
-function applyMd(ta, kind) {
-  const s = ta.selectionStart, e = ta.selectionEnd, v = ta.value;
-  if (kind === 'list') {
-    const ls = v.lastIndexOf('\n', s - 1) + 1;
-    const block = v.slice(ls, e);
-    const nb = block.split('\n').map(l => /^\s*[-*•]\s/.test(l) ? l : '- ' + l).join('\n');
-    ta.value = v.slice(0, ls) + nb + v.slice(e);
-    ta.setSelectionRange(ls + nb.length, ls + nb.length);
-  } else {
-    const w = kind === 'bold' ? '**' : '`';
-    const inner = v.slice(s, e) || (kind === 'bold' ? '重點' : 'parameter');
-    ta.value = v.slice(0, s) + w + inner + w + v.slice(e);
-    ta.setSelectionRange(s + w.length, s + w.length + inner.length);
+function inlineOf(node) {
+  let s = '';
+  node.childNodes.forEach(n => {
+    if (n.nodeType === 3) s += n.textContent.replace(/\u200b/g, '');
+    else if (n.nodeName === 'BR') s += '\n';
+    else if (n.nodeName === 'STRONG' || n.nodeName === 'B') { const t = inlineOf(n); if (t) s += `**${t}**`; }
+    else if (n.nodeName === 'CODE') { const t = n.textContent.replace(/\u200b/g, ''); if (t) s += '`' + t + '`'; }
+    else if (n.nodeName !== 'UL' && n.nodeName !== 'OL') s += inlineOf(n);
+  });
+  return s.replace(/\u00a0/g, ' ');
+}
+function rteToMd(root) {
+  const out = [];
+  const walk = parent => {
+    let buf = [];
+    const dump = () => {
+      if (!buf.length) return;
+      const wrap = document.createElement('div');
+      buf.forEach(n => wrap.appendChild(n.cloneNode(true)));
+      out.push(inlineOf(wrap).replace(/\n+$/, ''));
+      buf = [];
+    };
+    for (const n of parent.childNodes) {
+      if (n.nodeName === 'UL' || n.nodeName === 'OL') {
+        dump();
+        [...n.children].filter(c => c.nodeName === 'LI').forEach((li, i) => out.push((n.nodeName === 'OL' ? `${i + 1}. ` : '- ') + inlineOf(li).trim()));
+      } else if (n.nodeName === 'DIV' || n.nodeName === 'P') {
+        dump();
+        if ([...n.childNodes].some(c => c.nodeName === 'UL' || c.nodeName === 'OL')) walk(n);
+        else out.push(inlineOf(n).replace(/\n+$/, ''));
+      } else buf.push(n);
+    }
+    dump();
+  };
+  walk(root);
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+function syncRte(el) {
+  ED[el.dataset.f] = rteToMd(el);
+  el.dataset.empty = el.textContent.replace(/\u200b/g, '').trim() ? '' : '1';
+  touch();
+}
+function markTb(el) {
+  const bar = el.closest('.box')?.querySelector('.tb');
+  if (!bar) return;
+  const sel = window.getSelection();
+  const inside = !!(sel && sel.anchorNode && el.contains(sel.anchorNode));
+  const node = sel?.anchorNode;
+  const host = node && (node.nodeType === 1 ? node : node.parentElement);
+  bar.querySelectorAll('button').forEach(b => {
+    let on = false;
+    if (inside) {
+      if (b.dataset.k === 'bold') on = document.queryCommandState('bold');
+      else if (b.dataset.k === 'list') on = document.queryCommandState('insertUnorderedList');
+      else if (b.dataset.k === 'olist') on = document.queryCommandState('insertOrderedList');
+      else if (b.dataset.k === 'code') on = !!host?.closest('code');
+    }
+    b.classList.toggle('on', on);
+  });
+}
+function toggleCode() {
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) return;
+  const node = sel.anchorNode;
+  const host = node && (node.nodeType === 1 ? node : node.parentElement);
+  const code = host?.closest('code');
+  if (code) {
+    const text = document.createTextNode(code.textContent.replace(/\u200b/g, ''));
+    code.replaceWith(text);
+    const r = document.createRange();
+    r.selectNodeContents(text);
+    sel.removeAllRanges();
+    sel.addRange(r);
+    return;
   }
-  ta.focus();
-  ta.dispatchEvent(new Event('input'));
+  const range = sel.getRangeAt(0);
+  const c = document.createElement('code');
+  if (range.collapsed) {
+    c.appendChild(document.createTextNode('\u200b'));
+    range.insertNode(c);
+    const r = document.createRange();
+    r.setStart(c.firstChild, 1);
+    r.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(r);
+    return;
+  }
+  try { range.surroundContents(c); }
+  catch { c.appendChild(range.extractContents()); range.insertNode(c); }
+  const r = document.createRange();
+  r.selectNodeContents(c);
+  sel.removeAllRanges();
+  sel.addRange(r);
+}
+function applyRich(field, kind) {
+  const el = $(`#editor .rte[data-f="${field}"]`);
+  if (!el) return;
+  el.focus();
+  if (kind === 'bold') document.execCommand('bold');
+  else if (kind === 'list') document.execCommand('insertUnorderedList');
+  else if (kind === 'olist') document.execCommand('insertOrderedList');
+  else if (kind === 'code') toggleCode();
+  syncRte(el);
+  markTb(el);
 }
 
 function missingColumn(error, name) {
@@ -1220,6 +1334,7 @@ function missingColumn(error, name) {
 
 async function save() {
   if ($('#saveBtn')?.disabled) return;
+  $$('#editor .rte').forEach(syncRte);
   const pending = $('#tagIn')?.value; if (pending) { addTag(pending); $('#tagIn').value = ''; }
   ED.title = ED.title.trim();
   if (!ED.title) {
@@ -1355,7 +1470,7 @@ const actions = {
   sugg: b => { addTag(b.dataset.t); renderSugg(); },
   addfail: () => addFail(),
   rmfail: b => { ED.failed.splice(+b.dataset.i, 1); if (!ED.failed.length) ED.failed = ['']; renderFails(); touch(); },
-  md: b => applyMd($(`#editor textarea[data-f="${b.dataset.f}"]`), b.dataset.k),
+  md: b => applyRich(b.dataset.f, b.dataset.k),
   pick: () => $('#fileIn').click(),
   cover: b => { const [im] = ED.images.splice(+b.dataset.i, 1); ED.images.unshift(im); renderImgs(); touch(); },
   rmimg: b => {
