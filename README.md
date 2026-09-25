@@ -18,20 +18,30 @@
 5. 到 **Project Settings → API Keys**（或專案首頁的 **Connect** 按鈕），複製 **Project URL** 和 **publishable key**（舊專案叫 anon key）。
    ⚠️ 不要使用 secret key 或 service_role key。
 
-### B. GitHub Pages
+### B. GitHub Pages（讓網站可以用網址打開）
 
-1. GitHub 右上角 **+ → New repository**，名稱例如 `cae-kb`，選 **Public**，按 Create。
-2. 在新 repo 頁面點 **uploading an existing file**，把 `index.html`、`setup.sql`、`README.md` 拖進去 → **Commit changes**。
-3. **Settings → Pages**，Source 選 **Deploy from a branch**，Branch 選 **main**、資料夾 **/(root)** → Save。
-4. 等 1～2 分鐘，網站會出現在 `https://你的帳號.github.io/cae-kb/`。
+1. 到 repo 頁面 https://github.com/ayay2270/CAE-Knowledge-Base-V2 ，點上方分頁列最右邊的 **Settings**（齒輪圖示）。
+2. 左側選單往下找到 **Pages**（在「Code and automation」那一區）。
+3. 在 **Build and deployment** 底下：
+   - **Source** 選 **Deploy from a branch**
+   - **Branch** 的第一個下拉選 **main**，第二個下拉選 **/ (root)**
+   - 按 **Save**
+4. 等 1～3 分鐘後重新整理 Pages 頁面，最上方會出現 **Your site is live at …** 和 **Visit site** 按鈕。
+
+網站網址：**https://ayay2270.github.io/CAE-Knowledge-Base-V2/**
+
+（選用）回到 repo 首頁，右側 **About** 旁邊的齒輪 → 勾選 **Use your GitHub Pages website** → Save，之後 repo 首頁就會直接顯示網站連結。
 
 ### C. 第一次開啟
 
-打開網站 → 貼上 Project URL 和 publishable key → 用步驟 A-3 的帳號登入。
+打開上面的網站網址 → 貼上 Project URL 和 publishable key → 用 A-3 建立的帳號登入。
 
 ## 之後更新網站
 
-我（Claude）給你新版 `index.html` 時，到 repo 點 `index.html` → 右上角 **⋯ → Delete file** 或直接用 **Add file → Upload files** 上傳同名檔案覆蓋 → Commit。1～2 分鐘後重新整理網站即可。資料不會受影響。
+1. 在 repo 首頁點 **Add file → Upload files**。
+2. 把新版 `index.html` 拖進去（檔名必須是 `index.html`，如果下載後變成 `index_1.html` 要先改回來）。
+3. 按 **Commit changes**。同名檔案會自動覆蓋舊的。
+4. 等 1～2 分鐘，重新整理網站。資料存在 Supabase，不會受影響。
 
 ## 常見問題
 
