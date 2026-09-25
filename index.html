@@ -171,6 +171,7 @@ button.tag:hover{background:rgba(37,99,235,.2)}
 .gallery-row img{width:100%;height:100%;object-fit:cover;display:block}
 .gap{height:28px}
 .step{display:flex;gap:14px;margin-bottom:20px}
+.editor .step{gap:12px;margin-bottom:14px;align-items:flex-start}
 .num{width:28px;height:28px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff}
 .num i{font-size:16px}
 .step h3{font-size:13px;font-weight:600;margin:4px 0 4px}
@@ -194,20 +195,27 @@ button.tag:hover{background:rgba(37,99,235,.2)}
 .pending{color:var(--text3);font-style:italic;font-size:14px}
 
 /* 編輯頁 */
-section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
-.ed-bar{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);z-index:5;display:flex;align-items:center;gap:14px;padding:12px 32px;border-bottom:1px solid var(--line)}
+section.editor{background:var(--bg);flex:1;min-height:0;overflow:auto}
+.ed-bar{position:sticky;top:0;background:#fff;z-index:5;display:flex;align-items:center;gap:14px;padding:12px 28px;border-bottom:1px solid var(--line)}
 .ed-bar .back{color:var(--text2);display:flex;align-items:center;gap:5px;font-size:13px}
 .ed-bar .back:hover{color:var(--text)}
 .ed-bar strong{font-size:16px;font-weight:600}
 .ed-status{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .ed-status.ok{color:var(--green)}
-.ed-body{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:36px;padding:26px 32px 70px;max-width:1240px}
-.field{margin-bottom:22px}
+.ed-body{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:22px;padding:18px 28px 48px;max-width:1180px;align-items:start}
+.ed-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.ed-badge{appearance:none;-webkit-appearance:none;border:none;color:#fff;font-size:12px;font-weight:600;border-radius:7px;padding:5px 26px 5px 10px;cursor:pointer;background-repeat:no-repeat;background-position:right 8px center;background-size:12px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E")}
+.ed-badge.hm{background-color:var(--hm)}
+.ed-badge.ls{background-color:var(--ls)}
+.ed-badge.x{background-color:var(--blue)}
+.ed-updated{font-size:13px;color:var(--text3)}
+.ed-title{font-size:22px;font-weight:600;padding:12px 14px;border-radius:12px;background:#fff}
+.field{margin-bottom:14px}
 .lab{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:7px}
 .req{color:var(--red)}
 .inp{width:100%;border:1px solid var(--line2);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;background:#fff}
 .inp:focus,.tagbox:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
-.inp.title{font-size:18px;font-weight:600}
+.inp.title{font-size:22px;font-weight:600}
 .inp.bad{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.15)}
 .ferr{color:#DC2626;font-size:12px;margin-top:5px}
 .cats{display:flex;gap:8px;flex-wrap:wrap}
@@ -219,7 +227,7 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 .cc.on.hm{border-color:var(--hm);background:var(--hm-bg);color:var(--hm-ink);font-weight:600}
 .cc.on.ls{border-color:var(--ls);background:var(--ls-bg);color:var(--ls-ink);font-weight:600}
 .cc.on.x{border-color:var(--blue);background:rgba(37,99,235,.08);color:var(--blue);font-weight:600}
-.tagbox{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:10px;padding:7px 9px;cursor:text}
+.tagbox{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:12px;padding:8px 10px;cursor:text;background:#fff}
 .tagbox input{border:none;outline:none;flex:1;min-width:140px;font-size:13px;padding:3px;background:none}
 .tagbox .tag{display:inline-flex;align-items:center;gap:3px}
 .tagbox .tag button{display:flex;font-size:13px;opacity:.7}
@@ -228,14 +236,13 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 .sugg button{color:var(--blue);margin-right:8px;font-size:12px}
 .sugg button:hover{text-decoration:underline}
 .box{flex:1;min-width:0;border:1.5px solid;border-radius:12px;overflow:hidden}
-.box-h{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;font-size:13px;font-weight:600}
+.box-h{display:flex;align-items:center;gap:6px;padding:8px 8px 8px 12px;font-size:14px;font-weight:600;min-height:40px}
 .tb{margin-left:auto;display:flex;gap:2px}
-.tb button{width:28px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px}
-.tb button:hover{background:rgba(15,23,42,.1)}
-.box.sol .tb button:hover{background:rgba(255,255,255,.22)}
-.box textarea{width:100%;border:none;outline:none;resize:vertical;padding:10px 12px;font-size:14px;line-height:1.65;min-height:88px;display:block;background:#fff}
-.ed-extras{margin-left:42px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.xbox{border:1.5px dashed;border-radius:12px;padding:11px 13px}
+.tb button{width:28px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text2)}
+.tb button:hover{background:rgba(15,23,42,.08)}
+.box textarea{width:100%;border:none;outline:none;resize:vertical;padding:10px 12px;font-size:14px;line-height:1.65;min-height:76px;display:block;background:#fff}
+.ed-extras{margin-left:40px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.xbox{border:1.5px solid;border-radius:12px;padding:12px 14px;background:#fff}
 .xbox h4{font-size:13px;font-weight:600;margin:0 0 8px;display:flex;align-items:center;gap:5px}
 .fail-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
 .fail-row .dot{width:6px;height:6px;border-radius:50%;background:var(--red);flex:none}
@@ -245,7 +252,7 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 .fail-row button:hover{color:#DC2626}
 .add-fail{font-size:13px;color:#DC2626;font-weight:500;display:inline-flex;align-items:center;gap:3px;margin-top:2px}
 .xbox textarea{width:100%;border:none;outline:none;background:transparent;resize:vertical;font-size:13px;min-height:78px;line-height:1.6}
-.ref-box{margin:12px 0 0 42px}
+.ref-box{margin:12px 0 0 40px;background:#fff}
 .drop{border:2px dashed var(--blue);background:rgba(37,99,235,.05);border-radius:14px;padding:26px 14px;text-align:center;cursor:pointer;transition:background .15s;width:100%}
 .drop:hover,.drop.over{background:rgba(37,99,235,.13)}
 .drop i{font-size:30px;color:var(--blue)}
@@ -261,8 +268,8 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 .im .ops button{width:28px;height:28px;border-radius:7px;background:rgba(15,23,42,.78);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}
 .im .ops button:hover{background:var(--ink)}
 .hint{font-size:12px;color:var(--text3);margin-top:8px;line-height:1.6}
-.ed-side{position:sticky;top:84px;align-self:start}
-.ed-foot{margin-top:30px;padding-top:18px;border-top:1px solid var(--line)}
+.ed-side{position:sticky;top:72px;align-self:start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.ed-foot{margin:16px 0 0 40px}
 
 /* 設定／登入 */
 .screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--navy)}
@@ -294,6 +301,11 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
   main.layout{grid-template-columns:200px 310px minmax(0,1fr)}
   section.detail{padding:22px 24px 60px}
   .ed-body{grid-template-columns:1fr}
+  .ed-side{position:static}
+}
+@media (max-width:860px){
+  .ed-extras{grid-template-columns:1fr;margin-left:0}
+  .ref-box,.ed-foot{margin-left:0}
 }
 </style>
 </head>
@@ -1004,7 +1016,7 @@ function openEditor(id) {
   if (!user) { openLogin(); return; }
   const e = id ? S.entries.find(x => x.id === id) : null;
   ED = e ? {
-    id: e.id, title: e.title, category: e.category, tags: [...(e.tags || [])],
+    id: e.id, title: e.title, category: e.category, updated_at: e.updated_at, tags: [...(e.tags || [])],
     symptom: e.symptom || '', root_cause: e.root_cause || '', solution: e.solution || '',
     failed: [...(e.failed_attempts || [])], notes: e.notes || '', reference_source: e.reference_source || '',
     images: (e.images || []).map(x => ({ path: x.path })), removed: [], dirty: false
@@ -1039,10 +1051,10 @@ function closeEditor() {
   $('#newBtn').classList.remove('hidden');
 }
 
-function textBox(field, n, color, ink, title, req, placeholder, sol) {
+function textBox(field, n, color, ink, title, placeholder) {
   return `<div class="step"><div class="num" style="background:${color}">${n}</div>
-    <div class="box ${sol ? 'sol' : ''}" style="border-color:${color}">
-      <div class="box-h" style="${sol ? `background:${color};color:#fff` : `background:color-mix(in srgb, ${color} 12%, #fff);color:${ink}`}">${title}${req ? ` <span class="${sol ? '' : 'req'}">*</span>` : ''}
+    <div class="box" style="border-color:${color}">
+      <div class="box-h" style="background:color-mix(in srgb, ${color} 10%, #fff);color:${ink}">${title}
         <span class="tb"><button type="button" data-act="md" data-k="bold" data-f="${field}" title="粗體"><i class="ti ti-bold"></i></button>
         <button type="button" data-act="md" data-k="list" data-f="${field}" title="項目清單"><i class="ti ti-list"></i></button>
         <button type="button" data-act="md" data-k="code" data-f="${field}" title="指令／參數"><i class="ti ti-code"></i></button></span></div>
@@ -1055,20 +1067,10 @@ function defaultCategory() {
   return ['optistruct', 'lsdyna'].find(isAssignable) || activeCats().find(c => isLeaf(c) && c.key !== 'hypermesh')?.key || 'optistruct';
 }
 function renderEditor(restored) {
-  const cc = (k, label, sub, g, icon) => `<button type="button" class="cc ${g} ${ED.category === k ? 'on' : ''}" data-act="cat" data-c="${esc(k)}"><img src="${icon}" alt=""><span>${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`;
-  const box = (k, label) => `<button type="button" class="cc x ${ED.category === k ? 'on' : ''}" data-act="cat" data-c="${esc(k)}"><i class="ti ti-box"></i><span>${esc(label)}</span></button>`;
-  const cardFor = c => {
-    const g = visualGroup(c.key);
-    if (c.key === 'hypermesh') {
-      const parent = catByKey(c.parent_key);
-      return cc(c.key, parent ? parent.label : c.label, c.label, 'hm', ICON.hm);
-    }
-    if (g === 'hm') return cc(c.key, c.label, '', 'hm', ICON.hm);
-    if (g === 'ls') return cc(c.key, c.label, '', 'ls', ICON.ls);
-    return box(c.key, c.label);
-  };
   const leaves = sortCats(CATS.filter(c => isLeaf(c) && (c.is_active || c.key === ED.category) && (c.key !== 'hypermesh' || ED.category === 'hypermesh')));
-  const cards = leaves.map(cardFor).join('');
+  const catOptions = leaves.map(c => `<option value="${esc(c.key)}" ${ED.category === c.key ? 'selected' : ''}>${esc(catInfo(c.key).path)}</option>`).join('');
+  const g = visualGroup(ED.category);
+  const updated = ED.updated_at ? `<span class="ed-updated">${fmtDate(ED.updated_at)} 更新</span>` : '';
   $('#editor').innerHTML = `
   <div class="ed-bar">
     <button class="back" data-act="cancel"><i class="ti ti-arrow-left"></i>返回</button>
@@ -1081,27 +1083,29 @@ function renderEditor(restored) {
   </div>
   <div class="ed-body">
     <div>
-      <div class="field"><label class="lab" for="edTitle">標題 <span class="req">*</span></label>
-        <input class="inp title" id="edTitle" value="${esc(ED.title)}" placeholder="例如：Timestep too small error">
+      <div class="ed-meta">
+        <select id="edCat" class="ed-badge ${g}" aria-label="軟體分類">${catOptions}</select>
+        ${updated}
+      </div>
+      <div class="field">
+        <input class="inp title ed-title" id="edTitle" value="${esc(ED.title)}" placeholder="輸入標題" aria-label="標題">
         <div class="ferr hidden" id="titleErr">請輸入標題</div></div>
-      <div class="field"><span class="lab">分類 <span class="req">*</span></span>
-        <div class="cats">${cards}</div></div>
       <div class="field"><label class="lab" for="tagIn">標籤</label>
         <div class="tagbox" id="tagbox"><input id="tagIn" placeholder="輸入後按 Enter"></div>
         <div class="sugg" id="sugg"></div></div>
-      ${textBox('symptom', '1', 'var(--orange)', '#EA580C', '症狀', false, '看到什麼現象？錯誤訊息可以直接貼上')}
-      ${textBox('root_cause', '2', 'var(--blue)', 'var(--blue)', '根本原因', false, '為什麼會發生？還不確定可以先空著')}
-      ${textBox('solution', '<i class="ti ti-check"></i>', 'var(--green)', '#fff', '解法', false, '具體步驟、參數設定', true)}
+      ${textBox('symptom', '1', 'var(--orange)', '#EA580C', '問題現象', '看到什麼現象？錯誤訊息可以直接貼上')}
+      ${textBox('root_cause', '2', 'var(--blue)', 'var(--blue)', '原因分析', '為什麼會發生？還不確定可以先空著')}
+      ${textBox('solution', '3', 'var(--green)', '#059669', '解決方法', '具體步驟、參數設定')}
       <div class="ed-extras">
-        <div class="xbox" style="border-color:#F87171"><h4 style="color:#DC2626"><i class="ti ti-x"></i>試過但無效</h4>
+        <div class="xbox" style="border-color:#FECACA;background:#FFF7F7"><h4 style="color:#DC2626">試過但無效</h4>
           <div id="fails"></div>
           <button class="add-fail" data-act="addfail"><i class="ti ti-plus"></i>新增一項</button></div>
-        <div class="xbox" style="border-color:#EAB308"><h4 style="color:#B45309"><i class="ti ti-bulb"></i>備註（選填）</h4>
-          <textarea data-f="notes" placeholder="補充說明、參考連結…">${esc(ED.notes)}</textarea></div>
+        <div class="xbox" style="border-color:#FDE68A;background:#FFFBEB"><h4 style="color:#B45309"><i class="ti ti-bulb"></i>備註（選填）</h4>
+          <textarea data-f="notes" placeholder="補充說明、參考連結...">${esc(ED.notes)}</textarea></div>
       </div>
-      <div class="xbox ref-box" style="border-color:var(--line2)"><h4 style="color:var(--text2)"><i class="ti ti-bookmark"></i>參考來源</h4>
+      <div class="xbox ref-box" style="border-color:var(--line);background:#fff"><h4 style="color:var(--text2)"><i class="ti ti-bookmark"></i>參考來源</h4>
         <textarea data-f="reference_source" placeholder="e.g. Altair Help / Supplier Report / Internal Test / URL...">${esc(ED.reference_source || '')}</textarea></div>
-      ${ED.id ? `<div class="ed-foot"><button class="btn danger" data-act="delete"><i class="ti ti-trash"></i>刪除這筆知識</button></div>` : ''}
+      ${ED.id ? `<div class="ed-foot"><button class="btn danger" data-act="delete"><i class="ti ti-trash"></i>刪除此筆知識</button></div>` : ''}
     </div>
     <div class="ed-side">
       <span class="lab">圖片</span>
@@ -1113,6 +1117,7 @@ function renderEditor(restored) {
   </div>`;
 
   $('#edTitle').addEventListener('input', e => { ED.title = e.target.value; $('#edTitle').classList.remove('bad'); $('#titleErr').classList.add('hidden'); touch(); });
+  $('#edCat')?.addEventListener('change', e => { ED.category = e.target.value; e.target.className = 'ed-badge ' + visualGroup(ED.category); touch(); });
   $$('#editor textarea[data-f]').forEach(ta => ta.addEventListener('input', () => { ED[ta.dataset.f] = ta.value; touch(); }));
   const tagIn = $('#tagIn');
   tagIn.addEventListener('keydown', e => {
