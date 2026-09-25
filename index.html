@@ -148,6 +148,8 @@ button.tag:hover{background:rgba(37,99,235,.2)}
 .extra.fail{background:rgba(239,68,68,.08)} .extra.fail h4{color:#DC2626}
 .extra.fail ul{margin:0;padding-left:18px;color:var(--text2)}
 .extra.note{background:rgba(250,204,21,.17)} .extra.note h4{color:#B45309}
+.extra.ref{background:var(--bg);border:1px solid var(--line)} .extra.ref h4{color:var(--text2)}
+.extra.ref .prose{font-size:14px}
 .extra.full{grid-column:1/-1}
 .pending{color:var(--text3);font-style:italic;font-size:14px}
 
@@ -201,6 +203,7 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 .fail-row button:hover{color:#DC2626}
 .add-fail{font-size:13px;color:#DC2626;font-weight:500;display:inline-flex;align-items:center;gap:3px;margin-top:2px}
 .xbox textarea{width:100%;border:none;outline:none;background:transparent;resize:vertical;font-size:13px;min-height:78px;line-height:1.6}
+.ref-box{margin:12px 0 0 42px}
 .drop{border:2px dashed var(--blue);background:rgba(37,99,235,.05);border-radius:14px;padding:26px 14px;text-align:center;cursor:pointer;transition:background .15s;width:100%}
 .drop:hover,.drop.over{background:rgba(37,99,235,.13)}
 .drop i{font-size:30px;color:var(--blue)}
@@ -457,7 +460,7 @@ function terms(q) {
   return [...new Set(parts)].slice(0, 40);
 }
 function hay(e) {
-  return [e.title, (e.tags || []).join(' '), e.symptom, e.root_cause, e.solution, (e.failed_attempts || []).join(' '), e.notes].join('\n').toLowerCase();
+  return [e.title, (e.tags || []).join(' '), e.symptom, e.root_cause, e.solution, (e.failed_attempts || []).join(' '), e.notes, e.reference_source || ''].join('\n').toLowerCase();
 }
 function visible() {
   let arr = S.entries.filter(e => inFilter(e));
@@ -474,10 +477,9 @@ function visible() {
   }
   const sorters = {
     new: (a, b) => new Date(b.updated_at) - new Date(a.updated_at),
-    views: (a, b) => (b.views || 0) - (a.views || 0),
     title: (a, b) => (a.title || '').localeCompare(b.title || '', 'zh-Hant')
   };
-  return arr.sort(sorters[S.sort]);
+  return arr.sort(sorters[S.sort] || sorters.new);
 }
 
 /* ---------- 側欄 ---------- */
@@ -509,7 +511,7 @@ function itemHtml(e) {
     <div class="thumb ${cover ? '' : 'ph ' + g}">${cover ? `<img data-path="${esc(cover)}" alt="">` : `<img src="${ICON[g]}" alt="">`}</div>
     <div style="min-width:0"><div class="cat" style="color:var(--${g}-ink)">${c.path}</div>
     <div class="t">${esc(e.title)}</div>
-    <div class="m">${fmtDate(e.updated_at)} · ${e.views || 0} 次瀏覽</div></div></button>`;
+    <div class="m">${fmtDate(e.updated_at)}</div></div></button>`;
 }
 function renderList(autoSel) {
   const arr = visible();
@@ -517,7 +519,6 @@ function renderList(autoSel) {
     ${S.tag ? `<span class="filter-chip">#${esc(S.tag)}<button data-act="untag" aria-label="取消標籤篩選"><i class="ti ti-x"></i></button></span>` : ''}
     ${S.q.trim() ? '' : `<select id="sort" aria-label="排序">
       <option value="new" ${S.sort === 'new' ? 'selected' : ''}>最近更新</option>
-      <option value="views" ${S.sort === 'views' ? 'selected' : ''}>瀏覽最多</option>
       <option value="title" ${S.sort === 'title' ? 'selected' : ''}>標題</option></select>`}</div>`;
   let body;
   if (!arr.length) {
@@ -549,11 +550,7 @@ async function bumpViews(id) {
   viewed.add(id);
   const { error } = await sb.rpc('increment_views', { entry_id: id });
   const e = S.entries.find(x => x.id === id);
-  if (!error && e) {
-    e.views = (e.views || 0) + 1;
-    const m = $(`#list .item[data-id="${id}"] .m`);
-    if (m) m.textContent = `${fmtDate(e.updated_at)} · ${e.views} 次瀏覽`;
-  }
+  if (!error && e) e.views = (e.views || 0) + 1;
 }
 
 /* ---------- 詳情 ---------- */
@@ -590,13 +587,15 @@ function renderDetail(resetScroll) {
     <div style="flex:1;min-width:0"><h3 style="color:${ink}">${title}</h3><div class="prose">${md(text) || pending}</div></div></div>`;
   const fails = (e.failed_attempts || []).filter(s => s && s.trim());
   const hasNote = e.notes && e.notes.trim();
+  const ref = (e.reference_source || '').trim();
   const both = fails.length && hasNote;
-  const extras = (fails.length || hasNote) ? `<div class="extras">
+  const extras = (fails.length || hasNote || ref) ? `<div class="extras">
     ${fails.length ? `<div class="extra fail ${both ? '' : 'full'}"><h4><i class="ti ti-x"></i>試過但無效</h4><ul>${fails.map(f => `<li>${inline(esc(f))}</li>`).join('')}</ul></div>` : ''}
     ${hasNote ? `<div class="extra note ${both ? '' : 'full'}"><h4><i class="ti ti-bulb"></i>備註</h4><div class="prose" style="font-size:14px">${md(e.notes)}</div></div>` : ''}
+    ${ref ? `<div class="extra ref full"><h4><i class="ti ti-bookmark"></i>參考來源</h4><div class="prose">${md(ref)}</div></div>` : ''}
   </div>` : '';
   el.innerHTML = `<div class="detail-inner">
-    <div class="d-top"><span class="pill ${g}">${c.path}</span><span class="d-date">${fmtDate(e.updated_at)} 更新 · ${e.views || 0} 次瀏覽</span>
+    <div class="d-top"><span class="pill ${g}">${c.path}</span><span class="d-date">${fmtDate(e.updated_at)} 更新</span>
       <div class="d-actions"><button class="btn" data-act="copylink" title="複製連結" aria-label="複製連結"><i class="ti ti-link"></i></button>
       <button class="btn primary" data-act="edit"><i class="ti ti-edit"></i>編輯</button></div></div>
     <h1 class="d-title">${esc(e.title)}</h1>
@@ -673,7 +672,7 @@ const DRAFT_KEY = 'kb-draft';
 function loadDraft() {
   try {
     const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
-    if (d && [d.title, d.symptom, d.root_cause, d.solution, d.notes].some(x => x && x.trim())) return d;
+    if (d && [d.title, d.symptom, d.root_cause, d.solution, d.notes, d.reference_source].some(x => x && x.trim())) return d;
   } catch (e) {}
   return null;
 }
@@ -683,8 +682,8 @@ function touch() {
   if (ED.id) return;
   clearTimeout(draftT);
   draftT = setTimeout(() => {
-    const { title, category, tags, symptom, root_cause, solution, failed, notes } = ED;
-    localStorage.setItem(DRAFT_KEY, JSON.stringify({ title, category, tags, symptom, root_cause, solution, failed, notes }));
+    const { title, category, tags, symptom, root_cause, solution, failed, notes, reference_source } = ED;
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({ title, category, tags, symptom, root_cause, solution, failed, notes, reference_source }));
     const st = $('#edStatus');
     if (st) { st.className = 'ed-status ok'; st.innerHTML = '<i class="ti ti-cloud-check"></i>草稿已自動儲存'; }
   }, 700);
@@ -695,11 +694,11 @@ function openEditor(id) {
   ED = e ? {
     id: e.id, title: e.title, category: e.category, tags: [...(e.tags || [])],
     symptom: e.symptom || '', root_cause: e.root_cause || '', solution: e.solution || '',
-    failed: [...(e.failed_attempts || [])], notes: e.notes || '',
+    failed: [...(e.failed_attempts || [])], notes: e.notes || '', reference_source: e.reference_source || '',
     images: (e.images || []).map(x => ({ path: x.path })), removed: [], dirty: false
   } : {
     id: null, title: '', category: S.filter === 'lsdyna' ? 'lsdyna' : S.filter === 'optistruct' ? 'optistruct' : 'hypermesh',
-    tags: S.tag ? [S.tag] : [], symptom: '', root_cause: '', solution: '', failed: [], notes: '', images: [], removed: [], dirty: false
+    tags: S.tag ? [S.tag] : [], symptom: '', root_cause: '', solution: '', failed: [], notes: '', reference_source: '', images: [], removed: [], dirty: false
   };
   let restored = false;
   if (!id) { const d = loadDraft(); if (d) { Object.assign(ED, d); restored = true; } }
@@ -768,6 +767,8 @@ function renderEditor(restored) {
         <div class="xbox" style="border-color:#EAB308"><h4 style="color:#B45309"><i class="ti ti-bulb"></i>備註（選填）</h4>
           <textarea data-f="notes" placeholder="補充說明、參考連結…">${esc(ED.notes)}</textarea></div>
       </div>
+      <div class="xbox ref-box" style="border-color:var(--line2)"><h4 style="color:var(--text2)"><i class="ti ti-bookmark"></i>參考來源</h4>
+        <textarea data-f="reference_source" placeholder="e.g. Altair Help / Supplier Report / Internal Test / URL...">${esc(ED.reference_source || '')}</textarea></div>
       ${ED.id ? `<div class="ed-foot"><button class="btn danger" data-act="delete"><i class="ti ti-trash"></i>刪除這筆知識</button></div>` : ''}
     </div>
     <div class="ed-side">
@@ -872,6 +873,11 @@ function applyMd(ta, kind) {
   ta.dispatchEvent(new Event('input'));
 }
 
+function missingColumn(error, name) {
+  const m = `${error?.message || ''} ${error?.details || ''} ${error?.hint || ''} ${error?.code || ''}`;
+  return new RegExp(name, 'i').test(m) && /column|schema cache|does not exist|could not find|PGRST204/i.test(m);
+}
+
 async function save() {
   if ($('#saveBtn')?.disabled) return;
   const pending = $('#tagIn')?.value; if (pending) { addTag(pending); $('#tagIn').value = ''; }
@@ -897,11 +903,19 @@ async function save() {
     const row = {
       title: ED.title, category: ED.category, tags: ED.tags,
       symptom: ED.symptom.trim(), root_cause: ED.root_cause.trim(), solution: ED.solution.trim(),
-      failed_attempts: ED.failed.map(s => s.trim()).filter(Boolean), notes: ED.notes.trim(), images
+      failed_attempts: ED.failed.map(s => s.trim()).filter(Boolean), notes: ED.notes.trim(),
+      reference_source: (ED.reference_source || '').trim(), images
     };
-    const res = ED.id
-      ? await sb.from('entries').update(row).eq('id', ED.id).select().single()
-      : await sb.from('entries').insert(row).select().single();
+    const write = payload => ED.id
+      ? sb.from('entries').update(payload).eq('id', ED.id).select().single()
+      : sb.from('entries').insert(payload).select().single();
+    let res = await write(row);
+    let refSkipped = false;
+    if (res.error && missingColumn(res.error, 'reference_source')) {
+      const { reference_source, ...rest } = row;
+      refSkipped = !!reference_source;
+      res = await write(rest);
+    }
     if (res.error) throw new Error('儲存失敗：' + res.error.message);
     if (ED.removed.length) await sb.storage.from(BUCKET).remove(ED.removed);
     const saved = res.data;
@@ -915,7 +929,7 @@ async function save() {
     history.replaceState(null, '', '#' + saved.id);
     renderSide(); renderList(false); renderDetail(true);
     $(`#list .item[data-id="${saved.id}"]`)?.scrollIntoView({ block: 'nearest' });
-    toast('已儲存');
+    toast(refSkipped ? '已儲存。參考來源尚未寫入資料庫，請先執行 setup.sql 的 reference_source 欄位。' : '已儲存', refSkipped);
   } catch (err) {
     toast(err.message || '儲存失敗', true);
     btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>儲存';

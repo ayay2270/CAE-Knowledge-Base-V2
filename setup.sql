@@ -13,11 +13,16 @@ create table if not exists public.entries (
   solution text not null default '',
   failed_attempts text[] not null default '{}',
   notes text not null default '',
+  reference_source text not null default '',
   images jsonb not null default '[]'::jsonb,
   views integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+-- 1b. 既有資料庫補上「參考來源」（重複執行也沒關係；不改 views、不刪資料）
+alter table public.entries
+  add column if not exists reference_source text not null default '';
 
 -- 2. 內容有修改時才更新「更新時間」（瀏覽次數變動不算）
 create or replace function public.touch_updated_at()
