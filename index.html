@@ -45,6 +45,10 @@ header.top{height:58px;flex:none;background:#062650;display:flex;align-items:cen
 .btn-new i{font-size:18px}
 .icon-btn{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
 header .icon-btn:hover{background:rgba(255,255,255,.12)}
+.btn-login{display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:10px;color:#fff;font-size:13px;font-weight:500;background:rgba(255,255,255,.1);white-space:nowrap}
+.btn-login:hover{background:rgba(255,255,255,.18)}
+.btn-login i{font-size:18px}
+.login-mask{position:fixed;inset:0;z-index:80;background:rgba(8,12,26,.45);display:flex;align-items:center;justify-content:center;padding:24px}
 .spacer{flex:1}
 .strip{display:flex;height:5px;flex:none}.strip span{flex:1}
 .menu{position:absolute;right:16px;top:54px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 36px rgba(15,23,42,.18);padding:6px;min-width:210px;z-index:60;color:var(--text)}
@@ -259,11 +263,11 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 <div id="root"></div>
 
 <script>
-/* ============================================================
-   設定：可以直接把 Supabase 的 URL 和 publishable key 填在這裡。
-   留空的話，第一次打開網站時會在畫面上請你輸入（存在瀏覽器裡）。
-   ============================================================ */
-const CONFIG = { url: '', key: '' };
+/* 瀏覽器只用 publishable key。不要放 secret / service_role。 */
+const CONFIG = {
+  url: 'https://irspvzxkxxlnibmtmpox.supabase.co',
+  key: 'sb_publishable_3bk70caairZWzia_AcdlZg_kQP4e0K9'
+};
 
 const BUCKET = 'kb-images';
 const ICON = {
@@ -287,104 +291,32 @@ let sb = null, user = null, ED = null;
 const S = { entries: [], filter: 'all', tag: null, q: '', sort: 'new', sel: null, gi: 0 };
 
 /* ---------- 啟動 ---------- */
-function getConfig() {
-  if (CONFIG.url && CONFIG.key) return CONFIG;
-  try { const c = JSON.parse(localStorage.getItem('kb-config') || 'null'); if (c && c.url && c.key) return c; } catch (e) {}
-  return null;
+function showConnError(msg) {
+  $('#root').innerHTML = `<div class="screen">${brandHtml()}<div class="card"><h2>連線失敗</h2><p>${esc(msg || '無法連接知識庫，請稍後再試。')}</p></div>${STRIP}</div>`;
 }
 
 async function boot() {
-  if (!window.supabase) {
-    $('#root').innerHTML = `<div class="screen"><div class="card"><h2>載入失敗</h2><p>無法載入 Supabase 套件，請確認網路連線後重新整理。</p></div></div>`;
-    return;
-  }
-  const cfg = getConfig();
-  if (!cfg) return showSetup();
-  sb = window.supabase.createClient(cfg.url, cfg.key);
+  if (!window.supabase) return showConnError('無法載入連線套件，請確認網路後重新整理。');
   try {
-    const { data } = await sb.auth.getSession();
-    if (!data.session) return showLogin();
-    user = data.session.user;
+    sb = window.supabase.createClient(CONFIG.url, CONFIG.key);
+    const { data, error } = await sb.auth.getSession();
+    if (error) throw error;
+    user = data.session?.user || null;
     showApp();
   } catch (e) {
-    showLogin();
+    showConnError('無法連接知識庫，請稍後再試。');
   }
 }
 
 const HEX = `<svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="#FACC15"/><g fill="none" stroke="#1E3A8A" stroke-width="1.7" stroke-linecap="round"><path d="M7 8 Q16 6 25 8"/><path d="M7 16 Q16 13 25 16"/><path d="M7 24 Q16 21 25 24"/><path d="M7 8 L7 24"/><path d="M16 6.6 Q14.8 15 16 22.6"/><path d="M25 8 L25 24"/></g><g fill="#1E3A8A"><circle cx="7" cy="8" r="1.5"/><circle cx="16" cy="6.6" r="1.5"/><circle cx="25" cy="8" r="1.5"/><circle cx="7" cy="16" r="1.5"/><circle cx="25" cy="16" r="1.5"/><circle cx="7" cy="24" r="1.5"/><circle cx="16" cy="22.6" r="1.5"/><circle cx="25" cy="24" r="1.5"/></g><circle cx="15.4" cy="14.4" r="2.4" fill="#EF4444"/></svg>`;
 function brandHtml() { return `<div class="brand">${HEX}CAE Knowledge Base</div>`; }
 
-function showSetup(msg = '') {
-  $('#root').innerHTML = `<div class="screen">${brandHtml()}<div class="card">
-    <h2>連接 Supabase</h2>
-    <p>第一次使用，請貼上 Supabase 專案的 Project URL 和 publishable key（舊版叫 anon key）。這兩個值只會存在這台電腦的瀏覽器裡。</p>
-    <div class="field"><label class="lab" for="cfgUrl">Project URL</label><input class="inp" id="cfgUrl" placeholder="https://abcdefgh.supabase.co" autocomplete="off"></div>
-    <div class="field"><label class="lab" for="cfgKey">Publishable key</label><input class="inp" id="cfgKey" placeholder="sb_publishable_… 或 eyJ…" autocomplete="off"></div>
-    <button class="btn primary" id="cfgGo">連線</button>
-    <div class="err" id="cfgErr">${esc(msg)}</div>
-    <div class="foot">請不要貼 secret key 或 service_role key</div>
-  </div>${STRIP}</div>`;
-  const go = () => {
-    const url = normalizeUrl($('#cfgUrl').value);
-    if (!url) return $('#cfgErr').textContent = 'Project URL 格式不對。應該長得像 https://abcdefghijkl.supabase.co，可以在 Project Settings → Data API 找到。';
-    const key = $('#cfgKey').value.trim();
-    if (key.length < 20) return $('#cfgErr').textContent = '金鑰看起來不完整，請整串複製。';
-    if (/^sb_secret_/.test(key) || /service_role/.test(atobSafe(key))) return $('#cfgErr').textContent = '這是 secret key，不能放在網頁上。請改貼 publishable key（或 anon key）。';
-    localStorage.setItem('kb-config', JSON.stringify({ url, key }));
-    boot();
-  };
-  $('#cfgGo').onclick = go;
-  $('#cfgKey').onkeydown = e => { if (e.key === 'Enter') go(); };
-}
-function normalizeUrl(raw) {
-  const v = (raw || '').trim();
-  const dash = v.match(/supabase\.com\/dashboard\/project\/([a-z0-9]{10,})/i);
-  if (dash) return `https://${dash[1].toLowerCase()}.supabase.co`;
-  const m = v.match(/^(?:https?:\/\/)?([a-z0-9-]+\.supabase\.(?:co|in))(?:[\/?#].*)?$/i);
-  if (m) return 'https://' + m[1].toLowerCase();
-  if (/^https:\/\/[^\s\/]+$/i.test(v.replace(/\/+$/, ''))) return v.replace(/\/+$/, '');
-  return '';
-}
-function atobSafe(k) { try { return atob(k.split('.')[1] || ''); } catch (e) { return ''; } }
-
-function showLogin() {
-  $('#root').innerHTML = `<div class="screen">${brandHtml()}<div class="card">
-    <h2>登入</h2>
-    <p>使用你在 Supabase 建立的帳號登入。<br><span style="font-size:12px;color:var(--text3)">連線到：${esc(getConfig()?.url || '')}</span></p>
-    <div class="field"><label class="lab" for="lgEmail">Email</label><input class="inp" id="lgEmail" type="email" autocomplete="username"></div>
-    <div class="field"><label class="lab" for="lgPw">密碼</label><input class="inp" id="lgPw" type="password" autocomplete="current-password"></div>
-    <button class="btn primary" id="lgGo">登入</button>
-    <div class="err" id="lgErr"></div>
-    <div class="foot"><button class="link" id="lgReset">重新設定 Supabase 連線</button></div>
-  </div>${STRIP}</div>`;
-  const go = async () => {
-    const email = $('#lgEmail').value.trim(), password = $('#lgPw').value;
-    if (!email || !password) return $('#lgErr').textContent = '請輸入 Email 和密碼。';
-    const btn = $('#lgGo'); btn.disabled = true; btn.textContent = '登入中…'; $('#lgErr').textContent = '';
-    try {
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      user = data.user; showApp();
-    } catch (err) {
-      const m = err.message || '';
-      $('#lgErr').textContent = /invalid login/i.test(m) ? 'Email 或密碼錯誤。'
-        : /api key|apikey|jwt/i.test(m) ? '金鑰不正確，請按下方「重新設定 Supabase 連線」。'
-        : /fetch|network|load failed/i.test(m) ? '連不到 Supabase。請檢查上方「連線到」的網址是否為 https://xxxx.supabase.co 格式；也可能是專案被暫停，或公司網路擋住了 supabase.co。'
-        : /not confirmed/i.test(m) ? '這個帳號還沒確認。請到 Supabase 的 Users 頁面確認帳號。'
-        : '登入失敗：' + m;
-      btn.disabled = false; btn.textContent = '登入';
-    }
-  };
-  $('#lgGo').onclick = go;
-  $('#lgPw').onkeydown = e => { if (e.key === 'Enter') go(); };
-  $('#lgReset').onclick = resetConfig;
-  $('#lgEmail').focus();
-}
-
-function resetConfig() {
-  if (!confirm('要清除這台電腦儲存的 Supabase 連線設定嗎？（資料不會被刪除）')) return;
-  localStorage.removeItem('kb-config');
-  location.reload();
+function loginErrText(err) {
+  const m = err?.message || '';
+  if (/invalid login/i.test(m)) return 'Email 或密碼錯誤。';
+  if (/not confirmed/i.test(m)) return '這個帳號還沒確認。';
+  if (/fetch|network|load failed/i.test(m)) return '連不到知識庫，請稍後再試。';
+  return '登入失敗，請稍後再試。';
 }
 
 /* ---------- 主畫面 ---------- */
@@ -401,15 +333,14 @@ function showApp() {
       <input id="q" placeholder="搜尋問題，或直接貼上錯誤訊息" autocomplete="off">
       <span class="kbd">${IS_MAC ? '⌘' : 'Ctrl'} K</span></label>
     <div class="spacer"></div>
-    <button class="btn-new" data-act="new" id="newBtn"><i class="ti ti-plus"></i>新增知識</button>
-    <button class="icon-btn" data-act="menu" aria-label="選單"><i class="ti ti-user-circle"></i></button>
+    ${user ? `<button class="btn-new" data-act="new" id="newBtn"><i class="ti ti-plus"></i>新增知識</button>
+    <button class="icon-btn" data-act="menu" aria-label="選單" title="${esc(user.email || '')}"><i class="ti ti-user-circle"></i></button>
     <div class="menu hidden" id="menu">
-      <div class="who">${esc(user?.email || '')}</div>
+      <div class="who">${esc(user.email || '')}</div>
       <button data-act="reload"><i class="ti ti-refresh"></i>重新載入資料</button>
       <button data-act="export"><i class="ti ti-download"></i>匯出備份（JSON）</button>
-      <button data-act="reset"><i class="ti ti-plug-connected"></i>更換 Supabase 設定</button>
       <button data-act="logout"><i class="ti ti-logout"></i>登出</button>
-    </div>
+    </div>` : `<button class="btn-login" data-act="login" title="登入管理"><i class="ti ti-user-circle"></i>登入管理</button>`}
   </header>
   ${STRIP}
   <main class="layout" id="layout">
@@ -417,13 +348,49 @@ function showApp() {
     <section class="list col" id="list"></section>
     <section class="detail col" id="detail"></section>
   </main>
-  <section class="editor hidden" id="editor"></section></div>`;
+  <section class="editor hidden" id="editor"></section>
+  <div class="login-mask hidden" id="loginMask">
+    <div class="card" role="dialog" aria-labelledby="loginTitle">
+      <h2 id="loginTitle">登入管理</h2>
+      <p>登入後才能新增或編輯知識。瀏覽不需要登入。</p>
+      <div class="field"><label class="lab" for="lgEmail">Email</label><input class="inp" id="lgEmail" type="email" autocomplete="username"></div>
+      <div class="field"><label class="lab" for="lgPw">密碼</label><input class="inp" id="lgPw" type="password" autocomplete="current-password"></div>
+      <button class="btn primary" data-act="loginGo" id="lgGo">登入</button>
+      <div class="err" id="lgErr"></div>
+      <div class="foot"><button class="link" data-act="loginClose">返回瀏覽</button></div>
+    </div>
+  </div></div>`;
 
   const q = $('#q');
   let t;
   q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => { S.q = q.value; renderList(true); }, 120); });
   q.addEventListener('keydown', e => { if (e.key === 'Escape') { q.value = ''; S.q = ''; renderList(true); q.blur(); } });
+  $('#lgPw')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doLogin(); } });
   loadEntries();
+}
+
+function openLogin() {
+  const mask = $('#loginMask');
+  if (!mask) return;
+  mask.classList.remove('hidden');
+  $('#lgErr').textContent = '';
+  $('#lgEmail')?.focus();
+}
+function closeLogin() { $('#loginMask')?.classList.add('hidden'); }
+async function doLogin() {
+  const email = $('#lgEmail').value.trim(), password = $('#lgPw').value;
+  if (!email || !password) return $('#lgErr').textContent = '請輸入 Email 和密碼。';
+  const btn = $('#lgGo'); btn.disabled = true; btn.textContent = '登入中…'; $('#lgErr').textContent = '';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    user = data.user;
+    closeLogin();
+    showApp();
+  } catch (err) {
+    $('#lgErr').textContent = loginErrText(err);
+    btn.disabled = false; btn.textContent = '登入';
+  }
 }
 
 async function loadEntries() {
@@ -433,7 +400,12 @@ async function loadEntries() {
   const { data, error } = await sb.from('entries').select('*').order('updated_at', { ascending: false });
   if (error) {
     const m = error.message || '';
-    if (/jwt|expired|not authenticated/i.test(m)) { await sb.auth.signOut(); return showLogin(); }
+    if (user && /jwt|expired|not authenticated/i.test(m)) {
+      user = null;
+      await sb.auth.signOut().catch(() => {});
+      showApp();
+      return;
+    }
     $('#list').innerHTML = emptyHtml('ti-database-off',
       /does not exist|schema cache|relation/i.test(m) ? '找不到資料表' : '讀取失敗',
       /does not exist|schema cache|relation/i.test(m) ? '請先到 Supabase 的 SQL Editor 執行 setup.sql，再重新整理。' : esc(m));
@@ -523,7 +495,7 @@ function renderList(autoSel) {
   let body;
   if (!arr.length) {
     body = !S.entries.length
-      ? emptyHtml('ti-notebook', '開始建立你的知識庫', '把第一個解決過的問題記下來。', `<br><button class="btn primary" data-act="new"><i class="ti ti-plus"></i>新增知識</button>`)
+      ? emptyHtml('ti-notebook', '開始建立你的知識庫', '把第一個解決過的問題記下來。', user ? `<br><button class="btn primary" data-act="new"><i class="ti ti-plus"></i>新增知識</button>` : '')
       : emptyHtml('ti-search-off', '找不到符合的知識', S.q.trim() ? '換個關鍵字試試，或只貼錯誤訊息中最關鍵的那一行。' : '這個分類還沒有資料。');
   } else body = arr.map(itemHtml).join('');
   $('#list').innerHTML = head + body;
@@ -546,6 +518,7 @@ function select(id, quiet) {
 
 const viewed = new Set();
 async function bumpViews(id) {
+  if (!user) return;
   if (viewed.has(id)) return;
   viewed.add(id);
   const { error } = await sb.rpc('increment_views', { entry_id: id });
@@ -597,7 +570,7 @@ function renderDetail(resetScroll) {
   el.innerHTML = `<div class="detail-inner">
     <div class="d-top"><span class="pill ${g}">${c.path}</span><span class="d-date">${fmtDate(e.updated_at)} 更新</span>
       <div class="d-actions"><button class="btn" data-act="copylink" title="複製連結" aria-label="複製連結"><i class="ti ti-link"></i></button>
-      <button class="btn primary" data-act="edit"><i class="ti ti-edit"></i>編輯</button></div></div>
+      ${user ? `<button class="btn primary" data-act="edit"><i class="ti ti-edit"></i>編輯</button>` : ''}</div></div>
     <h1 class="d-title">${esc(e.title)}</h1>
     ${(e.tags || []).length ? `<div class="tags">${e.tags.map(t => `<button class="tag" data-act="dtag" data-t="${esc(t)}">#${esc(t)}</button>`).join('')}</div>` : '<div class="gap" style="height:12px"></div>'}
     ${gallery}
@@ -690,6 +663,7 @@ function touch() {
 }
 
 function openEditor(id) {
+  if (!user) { openLogin(); return; }
   const e = id ? S.entries.find(x => x.id === id) : null;
   ED = e ? {
     id: e.id, title: e.title, category: e.category, tags: [...(e.tags || [])],
@@ -988,6 +962,9 @@ const actions = {
   gi: b => { S.gi = +b.dataset.i; renderDetail(false); },
   zoom: () => { const e = S.entries.find(x => x.id === S.sel); if (e) openLightbox(e.images.map(i => i.path), Math.min(S.gi, e.images.length - 1)); },
   copylink: () => { navigator.clipboard?.writeText(location.href).then(() => toast('已複製連結'), () => toast('無法複製，請手動複製網址列', true)); },
+  login: openLogin,
+  loginClose: closeLogin,
+  loginGo: doLogin,
   new: () => openEditor(null),
   edit: () => openEditor(S.sel),
   cancel: cancelEdit,
@@ -1012,8 +989,12 @@ const actions = {
   menu: () => $('#menu').classList.toggle('hidden'),
   reload: () => { $('#menu').classList.add('hidden'); loadEntries(); },
   export: () => { $('#menu').classList.add('hidden'); exportBackup(); },
-  reset: resetConfig,
-  logout: async () => { await sb.auth.signOut(); S.entries = []; S.sel = null; showLogin(); }
+  logout: async () => {
+    if (ED) { ED.dirty = false; closeEditor(); }
+    await sb.auth.signOut();
+    user = null;
+    showApp();
+  }
 };
 document.addEventListener('click', e => {
   const menu = $('#menu');

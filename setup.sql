@@ -44,37 +44,61 @@ returns void language sql security invoker as $$
   update public.entries set views = views + 1 where id = entry_id;
 $$;
 
--- 4. 權限：只有登入的你本人能讀寫自己的資料
+-- 4. 權限：匿名與登入者都可讀；新增／修改／刪除只給 authenticated
+--    條件是 true，不是 user_id = auth.uid()
+--    increment_views 只給 authenticated，匿名瀏覽不會加瀏覽次數
 alter table public.entries enable row level security;
 
 drop policy if exists "entries_select_own" on public.entries;
+drop policy if exists "entries_select_public" on public.entries;
 drop policy if exists "entries_insert_own" on public.entries;
 drop policy if exists "entries_update_own" on public.entries;
 drop policy if exists "entries_delete_own" on public.entries;
+drop policy if exists "entries_public_read" on public.entries;
+drop policy if exists "entries_authenticated_insert" on public.entries;
+drop policy if exists "entries_authenticated_update" on public.entries;
+drop policy if exists "entries_authenticated_delete" on public.entries;
 
-create policy "entries_select_own" on public.entries for select to authenticated using (user_id = auth.uid());
-create policy "entries_insert_own" on public.entries for insert to authenticated with check (user_id = auth.uid());
-create policy "entries_update_own" on public.entries for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy "entries_delete_own" on public.entries for delete to authenticated using (user_id = auth.uid());
+create policy "entries_public_read" on public.entries
+  for select to anon, authenticated using (true);
+create policy "entries_authenticated_insert" on public.entries
+  for insert to authenticated with check (true);
+create policy "entries_authenticated_update" on public.entries
+  for update to authenticated using (true) with check (true);
+create policy "entries_authenticated_delete" on public.entries
+  for delete to authenticated using (true);
 
+grant select on public.entries to anon;
 grant select, insert, update, delete on public.entries to authenticated;
+revoke execute on function public.increment_views(uuid) from public, anon;
 grant execute on function public.increment_views(uuid) to authenticated;
 
--- 5. 圖片儲存空間（不公開，只有你本人能存取）
+-- 5. 圖片：bucket 不公開。匿名與登入者可讀 kb-images；上傳／修改／刪除只給 authenticated
+--    條件只看 bucket_id，不是資料夾擁有者
 insert into storage.buckets (id, name, public)
 values ('kb-images', 'kb-images', false)
 on conflict (id) do nothing;
 
 drop policy if exists "kb_images_select_own" on storage.objects;
+drop policy if exists "kb_images_select_public" on storage.objects;
 drop policy if exists "kb_images_insert_own" on storage.objects;
 drop policy if exists "kb_images_update_own" on storage.objects;
 drop policy if exists "kb_images_delete_own" on storage.objects;
+drop policy if exists "kb_images_public_read" on storage.objects;
+drop policy if exists "kb_images_authenticated_insert" on storage.objects;
+drop policy if exists "kb_images_authenticated_update" on storage.objects;
+drop policy if exists "kb_images_authenticated_delete" on storage.objects;
 
-create policy "kb_images_select_own" on storage.objects for select to authenticated
-  using (bucket_id = 'kb-images' and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "kb_images_insert_own" on storage.objects for insert to authenticated
-  with check (bucket_id = 'kb-images' and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "kb_images_update_own" on storage.objects for update to authenticated
-  using (bucket_id = 'kb-images' and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "kb_images_delete_own" on storage.objects for delete to authenticated
-  using (bucket_id = 'kb-images' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "kb_images_public_read" on storage.objects
+  for select to anon, authenticated
+  using (bucket_id = 'kb-images');
+create policy "kb_images_authenticated_insert" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'kb-images');
+create policy "kb_images_authenticated_update" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'kb-images')
+  with check (bucket_id = 'kb-images');
+create policy "kb_images_authenticated_delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'kb-images');
