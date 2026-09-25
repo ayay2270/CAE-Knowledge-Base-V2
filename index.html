@@ -84,7 +84,23 @@ aside.side{background:#fff;border-right:1px solid var(--line);padding:14px 10px}
 .nav.on.hm{background:var(--hm-bg);color:var(--hm-ink)}
 .nav.on.ls{background:var(--ls-bg);color:var(--ls-ink)}
 .nav.on .n{color:inherit}
-.side-sec{font-size:12px;color:var(--text3);padding:18px 11px 6px}
+.side-sec{display:flex;align-items:center;gap:2px;font-size:12px;color:var(--text3);padding:18px 11px 6px}
+.side-edit{width:20px;height:20px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px}
+.side-edit:hover{background:var(--bg);color:var(--text2)}
+.label-pop{position:fixed;z-index:70;width:248px;max-height:min(70vh,520px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 36px rgba(15,23,42,.18);padding:12px;color:var(--text)}
+.label-pop h3{margin:0 0 10px;font-size:13px;font-weight:600}
+.label-pop .field{margin-bottom:8px}
+.label-pop .lab{font-size:11px;margin-bottom:3px}
+.label-pop .inp,.label-pop select{padding:6px 8px;font-size:13px;border-radius:8px;width:100%}
+.label-pop .sub-field{margin-left:14px}
+.label-pop .cat-row{display:flex;align-items:center;gap:4px}
+.label-pop .cat-row .inp{flex:1}
+.label-pop .cat-x{width:22px;height:22px;border-radius:6px;color:var(--text3);display:flex;align-items:center;justify-content:center;flex:none}
+.label-pop .cat-x:hover{background:var(--bg);color:#DC2626}
+.label-pop .add-box{margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.label-pop .row{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}
+.label-pop .row .btn{height:30px;padding:0 10px;font-size:12px}
+.label-pop .err{color:#DC2626;font-size:12px;min-height:16px;margin-top:6px}
 
 section.list{background:var(--bg);border-right:1px solid var(--line);padding:12px}
 .list-head{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:4px 6px 10px;font-size:13px;color:var(--text2);min-height:38px}
@@ -174,13 +190,15 @@ section.editor{background:#fff;flex:1;min-height:0;overflow:auto}
 .inp.title{font-size:18px;font-weight:600}
 .inp.bad{border-color:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.15)}
 .ferr{color:#DC2626;font-size:12px;margin-top:5px}
-.cats{display:flex;gap:8px}
-.cc{flex:1;display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;font-size:14px;color:var(--text2);background:#fff;text-align:left}
+.cats{display:flex;gap:8px;flex-wrap:wrap}
+.cc{flex:1 1 160px;min-height:54px;display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:11px;padding:10px 12px;font-size:14px;color:var(--text2);background:#fff;text-align:left}
+.cc i{font-size:22px;width:24px;text-align:center;flex:none}
 .cc:hover{border-color:var(--line2)}
 .cc img{width:24px;height:24px;object-fit:contain;flex:none}
 .cc small{display:block;font-size:11px;color:var(--text3);font-weight:400}
 .cc.on.hm{border-color:var(--hm);background:var(--hm-bg);color:var(--hm-ink);font-weight:600}
 .cc.on.ls{border-color:var(--ls);background:var(--ls-bg);color:var(--ls-ink);font-weight:600}
+.cc.on.x{border-color:var(--blue);background:rgba(37,99,235,.08);color:var(--blue);font-weight:600}
 .tagbox{display:flex;flex-wrap:wrap;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:10px;padding:7px 9px;cursor:text}
 .tagbox input{border:none;outline:none;flex:1;min-width:140px;font-size:13px;padding:3px;background:none}
 .tagbox .tag{display:inline-flex;align-items:center;gap:3px}
@@ -274,12 +292,88 @@ const ICON = {
   hm: 'data:image/png;base64,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',
   ls: 'data:image/png;base64,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'
 };
-const CATS = {
-  hypermesh:  { group: 'hm', path: 'HyperMesh' },
-  optistruct: { group: 'hm', path: 'HyperMesh › OptiStruct' },
-  lsdyna:     { group: 'ls', path: 'LS-DYNA' }
-};
-const FILTER_LABEL = { all: '全部', hm: 'HyperMesh', hypermesh: 'HyperMesh › Meshing', optistruct: 'HyperMesh › OptiStruct', lsdyna: 'LS-DYNA' };
+const CAT_BUILTIN = [
+  { key: 'hm', label: 'HyperMesh', parent_key: null, is_active: true, sort_order: 0 },
+  { key: 'hypermesh', label: 'Meshing', parent_key: 'hm', is_active: true, sort_order: 10 },
+  { key: 'optistruct', label: 'OptiStruct', parent_key: 'hm', is_active: true, sort_order: 20 },
+  { key: 'lsdyna', label: 'LS-DYNA', parent_key: null, is_active: true, sort_order: 30 }
+];
+let CATS = CAT_BUILTIN.map(c => ({ ...c }));
+let catRemote = false;
+function useBuiltinCats() { CATS = CAT_BUILTIN.map(c => ({ ...c })); catRemote = false; }
+function catByKey(key) { return CATS.find(c => c.key === key) || CAT_BUILTIN.find(c => c.key === key); }
+function sortCats(list) { return [...list].sort((a, b) => a.sort_order - b.sort_order || a.key.localeCompare(b.key)); }
+function activeCats() { return sortCats(CATS.filter(c => c.is_active)); }
+function childrenOf(key, activeOnly = true) {
+  return sortCats(CATS.filter(c => c.parent_key === key && (!activeOnly || c.is_active)));
+}
+function isLeaf(c) { return c && !childrenOf(c.key, true).length; }
+function descendantKeys(key) {
+  const out = [];
+  for (const c of childrenOf(key, true)) {
+    if (isLeaf(c)) out.push(c.key);
+    else out.push(...descendantKeys(c.key));
+  }
+  return out;
+}
+function rootKey(key) {
+  let c = catByKey(key), guard = 0, seen = new Set();
+  while (c && c.parent_key && !seen.has(c.key) && guard++ < 12) { seen.add(c.key); c = catByKey(c.parent_key); }
+  return c?.key || key;
+}
+function visualGroup(key) {
+  const root = rootKey(key);
+  if (root === 'lsdyna' || key === 'lsdyna') return 'ls';
+  if (root === 'hm' || key === 'hm') return 'hm';
+  return 'x';
+}
+function isAssignable(key) {
+  const c = catByKey(key);
+  return !!(c && c.is_active && isLeaf(c));
+}
+function catTableMissing(error) {
+  const m = `${error?.message || ''} ${error?.code || ''}`;
+  return /software_categories|schema cache|does not exist|PGRST205|42P01|PGRST204/i.test(m);
+}
+async function loadCategories() {
+  try { localStorage.removeItem('kb-cat-labels'); } catch (e) {}
+  const { data, error } = await sb.from('software_categories').select('*').order('sort_order');
+  if (error || !Array.isArray(data) || !data.length) { useBuiltinCats(); return; }
+  catRemote = true;
+  CATS = data.map(c => ({
+    key: c.key, label: String(c.label || c.key), parent_key: c.parent_key || null,
+    is_active: c.is_active !== false, sort_order: Number(c.sort_order) || 0
+  }));
+}
+function filterLabel(k) {
+  if (k === 'all') return '全部';
+  const c = catByKey(k);
+  if (!c) return '已隱藏的分類';
+  if (!isLeaf(c)) return c.label;
+  const parent = c.parent_key ? catByKey(c.parent_key) : null;
+  return parent && parent.is_active ? `${parent.label} › ${c.label}` : c.label;
+}
+function catInfo(category) {
+  const c = catByKey(category);
+  if (!c) return { group: 'x', path: '已隱藏的分類', label: '已隱藏的分類', parent: null };
+  const parent = c.parent_key ? catByKey(c.parent_key) : null;
+  let path = c.label;
+  if (c.key === 'hypermesh' && parent) path = parent.label;
+  else if (parent && parent.is_active) path = `${parent.label} › ${c.label}`;
+  return { group: visualGroup(c.key), path, label: c.label, parent: c.parent_key };
+}
+function uniqueCatKey(label) {
+  let base = String(label || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24);
+  if (!/^[a-z][a-z0-9-]{0,30}$/.test(base)) base = 'sw-' + Math.random().toString(36).slice(2, 8);
+  const used = new Set(['all', ...CATS.map(c => c.key)]);
+  let key = base, n = 2;
+  while (used.has(key)) key = `${base}-${n++}`;
+  return key;
+}
+function descendantsOf(key, into = new Set()) {
+  for (const c of CATS.filter(x => x.parent_key === key)) { into.add(c.key); descendantsOf(c.key, into); }
+  return into;
+}
 const STRIP = '<div class="strip">' + ['#1E3A8A','#2563EB','#06B6D4','#10B981','#84CC16','#FACC15','#F97316','#EF4444'].map(c => `<span style="background:${c}"></span>`).join('') + '</div>';
 const IS_MAC = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
 
@@ -349,6 +443,7 @@ function showApp() {
     <section class="detail col" id="detail"></section>
   </main>
   <section class="editor hidden" id="editor"></section>
+  <div class="label-pop hidden" id="labelPop"></div>
   <div class="login-mask hidden" id="loginMask">
     <div class="card" role="dialog" aria-labelledby="loginTitle">
       <h2 id="loginTitle">登入管理</h2>
@@ -396,6 +491,7 @@ async function doLogin() {
 async function loadEntries() {
   $('#list').innerHTML = `<div class="loading"><div class="spin"></div>載入中…</div>`;
   $('#detail').innerHTML = '';
+  await loadCategories();
   renderSide();
   const { data, error } = await sb.from('entries').select('*').order('updated_at', { ascending: false });
   if (error) {
@@ -421,7 +517,8 @@ async function loadEntries() {
 /* ---------- 篩選與搜尋 ---------- */
 function inFilter(e, f = S.filter) {
   if (f === 'all') return true;
-  if (f === 'hm') return (CATS[e.category] || {}).group === 'hm';
+  const node = catByKey(f);
+  if (node && !isLeaf(node)) return descendantKeys(f).includes(e.category);
   return e.category === f;
 }
 function terms(q) {
@@ -455,17 +552,199 @@ function visible() {
 }
 
 /* ---------- 側欄 ---------- */
+function sideIcon(key) {
+  const g = visualGroup(key);
+  if (g === 'ls') return `<img src="${ICON.ls}" alt="">`;
+  if (g === 'hm') return `<img src="${ICON.hm}" alt="">`;
+  return '<i class="ti ti-box"></i>';
+}
 function renderSide() {
   const count = k => S.entries.filter(e => inFilter(e, k)).length;
   const nav = (k, label, icon, cls = '', sub = false) =>
-    `<button class="nav ${sub ? 'sub' : ''} ${cls} ${S.filter === k ? 'on' : ''}" data-act="filter" data-f="${k}">${icon}<span>${label}</span><span class="n">${count(k)}</span></button>`;
+    `<button class="nav ${sub ? 'sub' : ''} ${cls} ${S.filter === k ? 'on' : ''}" data-act="filter" data-f="${k}">${icon}<span>${esc(label)}</span><span class="n">${count(k)}</span></button>`;
+  const roots = activeCats().filter(c => !c.parent_key);
+  const placed = new Set();
+  let tree = '';
+  for (const r of roots) {
+    const kids = childrenOf(r.key, true);
+    const g = visualGroup(r.key);
+    placed.add(r.key);
+    if (kids.length) {
+      tree += nav(r.key, r.label, sideIcon(r.key), g);
+      tree += kids.map(k => { placed.add(k.key); return nav(k.key, k.label, '', g, true); }).join('');
+    } else tree += nav(r.key, r.label, sideIcon(r.key), g);
+  }
+  for (const c of activeCats()) {
+    if (placed.has(c.key)) continue;
+    tree += nav(c.key, c.label, sideIcon(c.key), visualGroup(c.key));
+  }
   $('#side').innerHTML =
     nav('all', '全部', '<i class="ti ti-books"></i>') +
-    `<div class="side-sec">軟體</div>` +
-    nav('hm', 'HyperMesh', `<img src="${ICON.hm}" alt="">`, 'hm') +
-    nav('hypermesh', 'Meshing', '', 'hm', true) +
-    nav('optistruct', 'OptiStruct', '', 'hm', true) +
-    nav('lsdyna', 'LS-DYNA', `<img src="${ICON.ls}" alt="">`, 'ls');
+    `<div class="side-sec"><span>軟體</span>${user ? `<button type="button" class="side-edit" data-act="catLabels" title="編輯軟體分類" aria-label="編輯軟體分類"><i class="ti ti-pencil"></i></button>` : ''}</div>` +
+    tree;
+}
+function parentChoices(c) {
+  const blocked = descendantsOf(c.key);
+  blocked.add(c.key);
+  const opts = [`<option value="" ${c.parent_key ? '' : 'selected'}>獨立軟體</option>`];
+  for (const p of activeCats()) {
+    if (blocked.has(p.key)) continue;
+    opts.push(`<option value="${esc(p.key)}" ${c.parent_key === p.key ? 'selected' : ''}>${esc(p.label)} 底下</option>`);
+  }
+  return opts.join('');
+}
+function catRow(c, sub) {
+  return `<div class="field ${sub ? 'sub-field' : ''}"><div class="cat-row"><input class="inp" data-lab="${esc(c.key)}" maxlength="24" value="${esc(c.label)}"><button type="button" class="cat-x" data-act="catRemove" data-k="${esc(c.key)}" title="移除" aria-label="移除"><i class="ti ti-x"></i></button></div><select data-par="${esc(c.key)}" aria-label="位置">${parentChoices(c)}</select></div>`;
+}
+function renderCatPop() {
+  const pop = $('#labelPop');
+  if (!pop) return;
+  const roots = activeCats().filter(c => !c.parent_key);
+  const placed = new Set();
+  let rows = '';
+  for (const r of roots) {
+    const kids = childrenOf(r.key, true);
+    placed.add(r.key);
+    rows += catRow(r, false);
+    for (const k of kids) { placed.add(k.key); rows += catRow(k, true); }
+  }
+  for (const c of activeCats()) if (!placed.has(c.key)) rows += catRow(c, false);
+  const addParents = [`<option value="">獨立軟體</option>`, ...activeCats().map(c => `<option value="${esc(c.key)}">${esc(c.label)} 底下</option>`)];
+  pop.innerHTML = `<h3>軟體分類</h3>
+    ${rows}
+    <div class="add-box">
+      <div class="field"><label class="lab" for="newCatName">新增軟體</label><input class="inp" id="newCatName" maxlength="24" placeholder="顯示名稱"></div>
+      <div class="field"><label class="lab" for="newCatParent">位置</label>
+        <select id="newCatParent">${addParents.join('')}</select></div>
+      <button class="btn" data-act="catAdd"><i class="ti ti-plus"></i>新增</button>
+    </div>
+    <div class="err" id="labErr"></div>
+    <p class="lab" style="margin:8px 0 0">還原預設只恢復內建的 HyperMesh、Meshing、OptiStruct、LS-DYNA。另外新增的分類會保留。</p>
+    <div class="row">
+      <button class="btn" data-act="catLabelsReset">還原預設</button>
+      <button class="btn primary" data-act="catLabelsSave">儲存</button>
+    </div>`;
+}
+function placeCatPop() {
+  const pop = $('#labelPop');
+  const btn = $('.side-edit');
+  const side = $('#side');
+  if (!pop || !btn || !side) return;
+  const r = btn.getBoundingClientRect();
+  const s = side.getBoundingClientRect();
+  let left = s.right + 8;
+  if (left + pop.offsetWidth > window.innerWidth - 8) left = Math.max(8, window.innerWidth - pop.offsetWidth - 8);
+  pop.style.left = left + 'px';
+  let top = r.top;
+  const h = pop.offsetHeight;
+  if (top + h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - h - 8);
+  pop.style.top = top + 'px';
+}
+function openCatLabels() {
+  if (!user) return;
+  renderCatPop();
+  const pop = $('#labelPop');
+  if (!pop) return;
+  pop.classList.remove('hidden');
+  placeCatPop();
+  $('#lab-hm')?.focus();
+}
+function closeCatLabels() { $('#labelPop')?.classList.add('hidden'); }
+function needRemote() {
+  if (catRemote) return true;
+  const el = $('#labErr');
+  if (el) el.textContent = '分類資料表還沒建立。請先在 Supabase 執行 setup.sql，目前先顯示預設分類。';
+  else toast('分類資料表還沒建立。請先在 Supabase 執行 setup.sql。', true);
+  return false;
+}
+function readCatForm() {
+  const rows = [];
+  for (const c of activeCats()) {
+    const el = $(`[data-lab="${CSS.escape(c.key)}"]`);
+    if (!el) continue;
+    const label = el.value.trim();
+    if (!label) return { error: '顯示名稱不能空白。' };
+    const parent = $(`[data-par="${CSS.escape(c.key)}"]`)?.value || null;
+    rows.push({ key: c.key, label, parent_key: parent || null });
+  }
+  return { rows };
+}
+function refreshCats() {
+  renderSide();
+  renderList(false);
+  if (S.sel) renderDetail(false);
+}
+async function persistRows(rows) {
+  for (const row of rows) {
+    const cur = catByKey(row.key);
+    if (!cur || (cur.label === row.label && (cur.parent_key || null) === (row.parent_key || null))) continue;
+    const blocked = descendantsOf(row.key);
+    if (row.parent_key && (row.parent_key === row.key || blocked.has(row.parent_key))) {
+      return '不能把分類移到自己或子分類底下。';
+    }
+    const { error } = await sb.from('software_categories').update({ label: row.label, parent_key: row.parent_key }).eq('key', row.key);
+    if (error) return error.message || '儲存分類失敗。';
+  }
+  return '';
+}
+async function saveCatLabels() {
+  if (!needRemote()) return;
+  const form = readCatForm();
+  if (form.error) return $('#labErr').textContent = form.error;
+  const err = await persistRows(form.rows);
+  if (err) return $('#labErr').textContent = err;
+  await loadCategories();
+  refreshCats();
+  closeCatLabels();
+}
+async function resetCatLabels() {
+  if (!needRemote()) return;
+  for (const b of CAT_BUILTIN) {
+    const { error } = await sb.from('software_categories').update({
+      label: b.label, parent_key: b.parent_key, is_active: true, sort_order: b.sort_order
+    }).eq('key', b.key);
+    if (error) return $('#labErr').textContent = error.message || '還原失敗。';
+  }
+  await loadCategories();
+  refreshCats();
+  openCatLabels();
+}
+async function addCategory() {
+  if (!needRemote()) return;
+  const name = $('#newCatName')?.value.trim() || '';
+  if (!name) return $('#labErr').textContent = '請輸入顯示名稱。';
+  const parent = $('#newCatParent')?.value || null;
+  const form = readCatForm();
+  if (form.error) return $('#labErr').textContent = form.error;
+  const err = await persistRows(form.rows);
+  if (err) return $('#labErr').textContent = err;
+  const key = uniqueCatKey(name);
+  const sort = Math.max(0, ...CATS.map(c => c.sort_order)) + 10;
+  const { error } = await sb.from('software_categories').insert({ key, label: name, parent_key: parent, is_active: true, sort_order: sort });
+  if (error) return $('#labErr').textContent = error.message || '新增失敗。';
+  await loadCategories();
+  refreshCats();
+  openCatLabels();
+  $('#newCatName')?.focus();
+}
+async function removeCategory(key) {
+  if (!needRemote()) return;
+  const form = readCatForm();
+  if (form.error) return $('#labErr').textContent = form.error;
+  if (childrenOf(key, true).length) {
+    const name = catByKey(key)?.label || '這個上層';
+    return $('#labErr').textContent = `請先移動或移除「${name}」底下的分類，才能移除這個上層。`;
+  }
+  const n = S.entries.filter(e => e.category === key).length;
+  if (n && !confirm(`此分類仍有 ${n} 筆知識。移除後將從分類導覽隱藏，但既有知識不會被刪除。`)) return;
+  const err = await persistRows(form.rows.filter(r => r.key !== key));
+  if (err) return $('#labErr').textContent = err;
+  const { error } = await sb.from('software_categories').update({ is_active: false }).eq('key', key);
+  if (error) return $('#labErr').textContent = error.message || '移除失敗。';
+  if (S.filter === key) S.filter = 'all';
+  await loadCategories();
+  refreshCats();
+  openCatLabels();
 }
 
 /* ---------- 清單 ---------- */
@@ -477,17 +756,17 @@ function emptyHtml(icon, title, body, action = '') {
   return `<div class="empty"><i class="ti ${icon}"></i><b>${title}</b>${body}${action}</div>`;
 }
 function itemHtml(e) {
-  const c = CATS[e.category] || CATS.hypermesh, g = c.group;
+  const c = catInfo(e.category), g = c.group;
   const cover = (e.images || [])[0]?.path;
   return `<button class="item ${g} ${e.id === S.sel ? 'on' : ''}" data-act="select" data-id="${e.id}">
-    <div class="thumb ${cover ? '' : 'ph ' + g}">${cover ? `<img data-path="${esc(cover)}" alt="">` : `<img src="${ICON[g]}" alt="">`}</div>
-    <div style="min-width:0"><div class="cat" style="color:var(--${g}-ink)">${c.path}</div>
+    <div class="thumb ${cover ? '' : 'ph ' + g}">${cover ? `<img data-path="${esc(cover)}" alt="">` : (ICON[g] ? `<img src="${ICON[g]}" alt="">` : `<i class="ti ti-box"></i>`)}</div>
+    <div style="min-width:0"><div class="cat" style="color:${g === 'ls' ? 'var(--ls-ink)' : g === 'hm' ? 'var(--hm-ink)' : 'var(--text2)'}">${c.path}</div>
     <div class="t">${esc(e.title)}</div>
     <div class="m">${fmtDate(e.updated_at)}</div></div></button>`;
 }
 function renderList(autoSel) {
   const arr = visible();
-  const head = `<div class="list-head"><span class="count">${S.q.trim() ? '搜尋結果' : FILTER_LABEL[S.filter]}</span><span>${arr.length} 筆</span>
+  const head = `<div class="list-head"><span class="count">${S.q.trim() ? '搜尋結果' : esc(filterLabel(S.filter))}</span><span>${arr.length} 筆</span>
     ${S.tag ? `<span class="filter-chip">#${esc(S.tag)}<button data-act="untag" aria-label="取消標籤篩選"><i class="ti ti-x"></i></button></span>` : ''}
     ${S.q.trim() ? '' : `<select id="sort" aria-label="排序">
       <option value="new" ${S.sort === 'new' ? 'selected' : ''}>最近更新</option>
@@ -548,7 +827,7 @@ function renderDetail(resetScroll) {
   const el = $('#detail');
   const e = S.entries.find(x => x.id === S.sel);
   if (!e) { el.innerHTML = S.entries.length ? emptyHtml('ti-pointer', '從清單選一筆知識', '') : ''; return; }
-  const c = CATS[e.category] || CATS.hypermesh, g = c.group;
+  const c = catInfo(e.category), g = c.group;
   const imgs = e.images || [];
   const gi = Math.min(S.gi, Math.max(imgs.length - 1, 0));
   const gallery = imgs.length
@@ -671,11 +950,18 @@ function openEditor(id) {
     failed: [...(e.failed_attempts || [])], notes: e.notes || '', reference_source: e.reference_source || '',
     images: (e.images || []).map(x => ({ path: x.path })), removed: [], dirty: false
   } : {
-    id: null, title: '', category: S.filter === 'lsdyna' ? 'lsdyna' : S.filter === 'optistruct' ? 'optistruct' : 'hypermesh',
+    id: null, title: '', category: defaultCategory(),
     tags: S.tag ? [S.tag] : [], symptom: '', root_cause: '', solution: '', failed: [], notes: '', reference_source: '', images: [], removed: [], dirty: false
   };
   let restored = false;
-  if (!id) { const d = loadDraft(); if (d) { Object.assign(ED, d); restored = true; } }
+  if (!id) {
+    const d = loadDraft();
+    if (d) {
+      Object.assign(ED, d);
+      if (!isAssignable(ED.category) && !(catByKey(ED.category) && isLeaf(catByKey(ED.category)))) ED.category = defaultCategory();
+      restored = true;
+    }
+  }
   if (!ED.failed.length) ED.failed = [''];
   $('#layout').classList.add('hidden');
   $('#searchWrap').classList.add('hidden');
@@ -705,8 +991,25 @@ function textBox(field, n, color, ink, title, req, placeholder, sol) {
     </div></div>`;
 }
 
+function defaultCategory() {
+  if (isAssignable(S.filter)) return S.filter;
+  return ['hypermesh', 'optistruct', 'lsdyna'].find(isAssignable) || activeCats().find(isLeaf)?.key || 'hypermesh';
+}
 function renderEditor(restored) {
-  const cc = (k, label, sub, g, icon) => `<button type="button" class="cc ${g} ${ED.category === k ? 'on' : ''}" data-act="cat" data-c="${k}"><img src="${icon}" alt=""><span>${label}<small>${sub}</small></span></button>`;
+  const cc = (k, label, sub, g, icon) => `<button type="button" class="cc ${g} ${ED.category === k ? 'on' : ''}" data-act="cat" data-c="${esc(k)}"><img src="${icon}" alt=""><span>${esc(label)}${sub ? `<small>${esc(sub)}</small>` : ''}</span></button>`;
+  const box = (k, label) => `<button type="button" class="cc x ${ED.category === k ? 'on' : ''}" data-act="cat" data-c="${esc(k)}"><i class="ti ti-box"></i><span>${esc(label)}</span></button>`;
+  const cardFor = c => {
+    const g = visualGroup(c.key);
+    if (c.key === 'hypermesh') {
+      const parent = catByKey(c.parent_key);
+      return cc(c.key, parent ? parent.label : c.label, c.label, 'hm', ICON.hm);
+    }
+    if (g === 'hm') return cc(c.key, c.label, '', 'hm', ICON.hm);
+    if (g === 'ls') return cc(c.key, c.label, '', 'ls', ICON.ls);
+    return box(c.key, c.label);
+  };
+  const leaves = sortCats(CATS.filter(c => isLeaf(c) && (c.is_active || c.key === ED.category)));
+  const cards = leaves.map(cardFor).join('');
   $('#editor').innerHTML = `
   <div class="ed-bar">
     <button class="back" data-act="cancel"><i class="ti ti-arrow-left"></i>返回</button>
@@ -723,11 +1026,7 @@ function renderEditor(restored) {
         <input class="inp title" id="edTitle" value="${esc(ED.title)}" placeholder="例如：Timestep too small error">
         <div class="ferr hidden" id="titleErr">請輸入標題</div></div>
       <div class="field"><span class="lab">分類 <span class="req">*</span></span>
-        <div class="cats">
-          ${cc('hypermesh', 'HyperMesh', 'Meshing', 'hm', ICON.hm)}
-          ${cc('optistruct', 'OptiStruct', '&nbsp;', 'hm', ICON.hm)}
-          ${cc('lsdyna', 'LS-DYNA', '&nbsp;', 'ls', ICON.ls)}
-        </div></div>
+        <div class="cats">${cards}</div></div>
       <div class="field"><label class="lab" for="tagIn">標籤</label>
         <div class="tagbox" id="tagbox"><input id="tagIn" placeholder="輸入後按 Enter"></div>
         <div class="sugg" id="sugg"></div></div>
@@ -860,6 +1159,11 @@ async function save() {
     $('#edTitle').classList.add('bad'); $('#titleErr').classList.remove('hidden'); $('#edTitle').focus();
     return;
   }
+  const keepInactive = ED.id && S.entries.find(x => x.id === ED.id)?.category === ED.category && catByKey(ED.category) && isLeaf(catByKey(ED.category));
+  if (!(isAssignable(ED.category) || keepInactive)) {
+    toast('請選擇一個軟體分類。上層群組不能存成知識分類。', true);
+    return;
+  }
   const btn = $('#saveBtn');
   btn.disabled = true; btn.innerHTML = '<div class="spin" style="width:14px;height:14px;border-color:rgba(255,255,255,.4);border-top-color:#fff"></div>儲存中…';
   try {
@@ -889,6 +1193,9 @@ async function save() {
       const { reference_source, ...rest } = row;
       refSkipped = !!reference_source;
       res = await write(rest);
+    }
+    if (res.error && /check constraint|entries_category_check|entries_category_fkey|foreign key/i.test(res.error.message || '')) {
+      throw new Error('這個分類還不能寫進知識。請先在 Supabase 執行 setup.sql 的分類遷移。');
     }
     if (res.error) throw new Error('儲存失敗：' + res.error.message);
     if (ED.removed.length) await sb.storage.from(BUCKET).remove(ED.removed);
@@ -962,6 +1269,11 @@ const actions = {
   gi: b => { S.gi = +b.dataset.i; renderDetail(false); },
   zoom: () => { const e = S.entries.find(x => x.id === S.sel); if (e) openLightbox(e.images.map(i => i.path), Math.min(S.gi, e.images.length - 1)); },
   copylink: () => { navigator.clipboard?.writeText(location.href).then(() => toast('已複製連結'), () => toast('無法複製，請手動複製網址列', true)); },
+  catLabels: () => { const pop = $('#labelPop'); if (pop && !pop.classList.contains('hidden')) closeCatLabels(); else openCatLabels(); },
+  catLabelsSave: saveCatLabels,
+  catLabelsReset: resetCatLabels,
+  catAdd: addCategory,
+  catRemove: b => removeCategory(b.dataset.k),
   login: openLogin,
   loginClose: closeLogin,
   loginGo: doLogin,
@@ -999,6 +1311,8 @@ const actions = {
 document.addEventListener('click', e => {
   const menu = $('#menu');
   if (menu && !menu.classList.contains('hidden') && !e.target.closest('#menu') && !e.target.closest('[data-act="menu"]')) menu.classList.add('hidden');
+  const pop = $('#labelPop');
+  if (pop && !pop.classList.contains('hidden') && !e.target.closest('#labelPop') && !e.target.closest('[data-act="catLabels"]')) pop.classList.add('hidden');
   const a = e.target.closest('[data-act]');
   if (a && actions[a.dataset.act]) { e.preventDefault(); actions[a.dataset.act](a, e); }
 });
